@@ -1,6 +1,6 @@
 {
   "name": "node-http-mock",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "A HTTP mock server for node.js",
   "main": "dest/bundle.js",
   "scripts": {

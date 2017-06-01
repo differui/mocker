@@ -1949,17 +1949,6 @@ exports.default = function (fn) {
 
 var _asyncToGenerator = unwrapExports(asyncToGenerator);
 
-var $JSON = _core.JSON || (_core.JSON = {stringify: JSON.stringify});
-var stringify$1 = function stringify(it){ // eslint-disable-line no-unused-vars
-  return $JSON.stringify.apply($JSON, arguments);
-};
-
-var stringify = createCommonjsModule(function (module) {
-module.exports = { "default": stringify$1, __esModule: true };
-});
-
-var _JSON$stringify = unwrapExports(stringify);
-
 var f$1 = Object.getOwnPropertySymbols;
 
 var _objectGops = {
@@ -2012,6 +2001,17 @@ module.exports = { "default": assign$1, __esModule: true };
 });
 
 var _Object$assign = unwrapExports(assign);
+
+var $JSON = _core.JSON || (_core.JSON = {stringify: JSON.stringify});
+var stringify$1 = function stringify(it){ // eslint-disable-line no-unused-vars
+  return $JSON.stringify.apply($JSON, arguments);
+};
+
+var stringify = createCommonjsModule(function (module) {
+module.exports = { "default": stringify$1, __esModule: true };
+});
+
+var _JSON$stringify = unwrapExports(stringify);
 
 // 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
 _export(_export.S + _export.F * !_descriptors, 'Object', {defineProperty: _objectDp.f});
@@ -2221,12 +2221,16 @@ var index$1 = {
 };
 
 var close_switch_name = "__response_closed";
+var proxy = {};
+var mock$2 = {};
 var cfg = {
-	close_switch_name: close_switch_name
+	close_switch_name: close_switch_name,
+	proxy: proxy,
+	mock: mock$2
 };
 
 var name = "node-http-mock";
-var version = "0.2.3";
+var version = "0.2.5";
 var description = "A HTTP mock server for node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "./node_modules/.bin/rollup -c", "prestart": "npm run build", "start": "node ./dest/bundle.js", "test": "./node_modules/ava" };
@@ -2428,10 +2432,16 @@ var api = function () {
   };
 }();
 
+function createMock() {
+  var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+  overrideTpls(_JSON$stringify(_Object$assign({}, opts, cfg.mock)));
+}
+
 function createMockProxyServer() {
   var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-  var proxyCfg = _Object$assign({}, opts.proxy, cfg.proxy);
+  var proxyCfg = _Object$assign({}, opts, cfg.proxy);
 
   if (!proxyCfg.target) {
     throw new Error('Can not create proxy server without target');
@@ -2445,10 +2455,12 @@ function createMockServer() {
 
   var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
+  createMock(opts.mock);
+  var proxy$$1 = createMockProxyServer(opts.proxy);
   var q = [api, mock$1, function (req, res) {
     return new _Promise(function (resolve$$1, reject) {
       try {
-        createMockProxyServer(opts.proxy).web(req, res);
+        proxy$$1.web(req, res);
         resolve$$1();
       } catch (e) {
         reject(e);
@@ -2457,7 +2469,6 @@ function createMockServer() {
   }];
   var len = q.length;
 
-  overrideTpls(_JSON$stringify(opts.mock));
   return http.createServer(function () {
     var _ref = _asyncToGenerator(index.mark(function _callee(req, res) {
       var i;
@@ -2507,11 +2518,12 @@ function createMockServer() {
       }, _callee, _this, [[4, 9]]);
     }));
 
-    return function (_x3, _x4) {
+    return function (_x4, _x5) {
       return _ref.apply(this, arguments);
     };
   }());
 }
 
+exports.createMock = createMock;
 exports.createMockProxyServer = createMockProxyServer;
 exports.createMockServer = createMockServer;
