@@ -30,7 +30,7 @@ export async function api(req, res) {
         try {
           mock.createOrUpdateTpl(u, body)
           util.writeResponseSucceed(req, res, {
-            [u]: mock.getTpls()[u]
+            [u]: mock.getTpls()[u],
           })
         } catch (e) {
           util.writeResponseFailed(req, res, e.message)

@@ -4,7 +4,7 @@ import { mock as render } from 'mockjs'
 import * as util from './util'
 
 export function mock(req, res) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const url = pathResolve('/', req.url)
     const tpl = cache.get(url)
 
@@ -33,10 +33,9 @@ export function removeTpl(url) {
 }
 
 export function getTpls() {
-  return cache.keys().reduce((rtn, url) => {
-    rtn[url] = cache.get(url)
-    return rtn
-  }, {})
+  return cache.keys().reduce((rtn, url) => Object.assign({
+    [url]: cache.get(url),
+  }, rtn), {})
 }
 
 export function overrideTpls(tpls) {

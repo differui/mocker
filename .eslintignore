@@ -1,3 +1,4 @@
 dest/*.js
 src/*.json
+package.json
 rollup.config.js

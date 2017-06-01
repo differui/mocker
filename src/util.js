@@ -1,4 +1,5 @@
 import cfg from './config.json'
+import pkg from '../package.json'
 
 export function parseBody(req) {
   let body = ''
@@ -11,7 +12,10 @@ export function parseBody(req) {
 }
 
 export function writeResponseSucceed(req, res, data) {
-  res.writeHead(200, { 'Content-Type': 'application/json' })
+  res.writeHead(200, {
+    'Content-Type': 'application/json',
+    'X-Proxy-By': `mocker/${pkg.version}`,
+  })
   res.end(JSON.stringify({
     succeeded: true,
     data,
@@ -20,7 +24,10 @@ export function writeResponseSucceed(req, res, data) {
 }
 
 export function writeResponseFailed(req, res, message) {
-  res.writeHead(400, { 'Content-Type': 'application/json' })
+  res.writeHead(400, {
+    'Content-Type': 'application/json',
+    'X-Proxy-By': `mocker/${pkg.version}`,
+  })
   res.end(JSON.stringify({
     succeeded: false,
     message,

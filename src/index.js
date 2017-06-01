@@ -1,37 +1,46 @@
-import { green } from 'colors'
 import { createServer } from 'http'
-import proxy from './proxy'
+import { createProxyServer } from 'http-proxy'
 import { api } from './api'
 import { mock } from './mock'
 import cfg from './config.json'
 
-const q = [
-  api,
-  mock,
-  (req, res) => {
-    return new Promise((resolve, reject) => {
+export function createMockProxyServer(opts = {}) {
+  const proxyCfg = Object.assign({}, opts.proxy, cfg.proxy)
+
+  if (!proxyCfg.target) {
+    throw new Error('Can not create proxy server without target')
+  }
+
+  return createProxyServer(proxyCfg)
+}
+
+export function createMockServer(opts = {}) {
+  const proxy = createMockProxyServer(opts.proxy)
+  const q = [
+    api,
+    mock,
+    (req, res) => new Promise((resolve, reject) => {
       try {
         proxy.web(req, res)
         resolve()
       } catch (e) {
         reject(e)
       }
-    })
-  },
-]
-const len = q.length
+    }),
+  ]
+  const len = q.length
 
-createServer(async (req, res) => {
-  for (let i = 0; i < len; i += 1) {
-    if (res[cfg.close_switch_name]) {
-      return
+  createServer(async (req, res) => {
+    /* eslint-disable no-await-in-loop */
+    for (let i = 0; i < len; i += 1) {
+      if (res[cfg.close_switch_name]) {
+        return
+      }
+      try {
+        await q[i](req, res)
+      } catch (e) {
+        throw e
+      }
     }
-
-    try {
-      await q[i](req, res)
-    } catch (e) {
-      throw e
-    }
-  }
-}).listen(cfg.port)
-
+  }).listen(opts.port || cfg.port)
+}
