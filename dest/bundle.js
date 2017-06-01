@@ -2428,6 +2428,12 @@ var api = function () {
   };
 }();
 
+function createMock() {
+  var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+  mock$1.overrideTpls(opts);
+}
+
 function createMockProxyServer() {
   var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
@@ -2445,11 +2451,10 @@ function createMockServer() {
 
   var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-  var proxy = createMockProxyServer(opts.proxy);
   var q = [api, mock$1, function (req, res) {
     return new _Promise(function (resolve$$1, reject) {
       try {
-        proxy.web(req, res);
+        createMockProxyServer(opts.proxy).web(req, res);
         resolve$$1();
       } catch (e) {
         reject(e);
@@ -2458,6 +2463,7 @@ function createMockServer() {
   }];
   var len = q.length;
 
+  createMock(opts.mock);
   http.createServer(function () {
     var _ref = _asyncToGenerator(index.mark(function _callee(req, res) {
       var i;
@@ -2507,11 +2513,12 @@ function createMockServer() {
       }, _callee, _this, [[4, 9]]);
     }));
 
-    return function (_x3, _x4) {
+    return function (_x4, _x5) {
       return _ref.apply(this, arguments);
     };
   }()).listen(opts.port || cfg.port);
 }
 
+exports.createMock = createMock;
 exports.createMockProxyServer = createMockProxyServer;
 exports.createMockServer = createMockServer;
