@@ -17,6 +17,28 @@ npm run start
 npm run test
 ```
 
+## Quick Start
+
+```js
+import { createMockServer } from 'http-mock'
+
+const server = createMockServer({
+  proxy: {
+    target: 'your api host',
+    changeOrigin: true,
+  },
+})
+
+server.listen(5000)
+console.log('Mock server is listening 5000')
+```
+
+## Options
+
+**`proxy`**
+
+Proxy settings for `http-proxy`.
+
 ## API
 
 + `GET /templates` checkout current templates
@@ -26,4 +48,4 @@ npm run test
 
 ## License
 
-&copy; [differui](mailto:differui@gmail.com)
+MIT &copy; [BinRui.Guan](mailto:differui@gmail.com)

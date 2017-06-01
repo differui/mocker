@@ -1,4 +1,3 @@
 {
-  "port": 5000,
   "close_switch_name": "__response_closed"
 }
