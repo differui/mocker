@@ -2231,7 +2231,7 @@ var cfg = {
 };
 
 var name = "node-http-mock";
-var version = "0.3.0";
+var version = "0.3.1";
 var description = "A HTTP mock server for node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "./node_modules/.bin/rollup -c", "prestart": "npm run build", "start": "node ./dest/bundle.js", "test": "./node_modules/ava" };
@@ -2294,11 +2294,11 @@ function writeResponseFailed(req, res, message) {
 }
 
 function mock$3(req) {
-  console.log(colors.green('Mock: ' + path.resolve('/', req.url)));
+  console.log(colors.green('Mock: ' + req.method + ' ' + path.resolve('/', req.url)));
 }
 
 function proxy$1(req) {
-  console.log(colors.gray('Proxy: ' + path.resolve('/', req.url)));
+  console.log(colors.gray('Proxy: ' + req.method + ' ' + path.resolve('/', req.url)));
 }
 
 function mock$1(req, res) {
