@@ -2226,7 +2226,7 @@ var cfg = {
 };
 
 var name = "node-http-mock";
-var version = "0.2.1";
+var version = "0.2.3";
 var description = "A HTTP mock server for node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "./node_modules/.bin/rollup -c", "prestart": "npm run build", "start": "node ./dest/bundle.js", "test": "./node_modules/ava" };
@@ -2458,7 +2458,7 @@ function createMockServer() {
   var len = q.length;
 
   overrideTpls(_JSON$stringify(opts.mock));
-  http.createServer(function () {
+  return http.createServer(function () {
     var _ref = _asyncToGenerator(index.mark(function _callee(req, res) {
       var i;
       return index.wrap(function _callee$(_context) {
@@ -2510,7 +2510,7 @@ function createMockServer() {
     return function (_x3, _x4) {
       return _ref.apply(this, arguments);
     };
-  }()).listen(opts.port || cfg.port);
+  }());
 }
 
 exports.createMockProxyServer = createMockProxyServer;
