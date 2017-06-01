@@ -5,6 +5,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var http = require('http');
 var httpProxy = require('http-proxy');
 var path = require('path');
+var colors = require('colors');
 var mockjs = require('mockjs');
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -2230,14 +2231,14 @@ var cfg = {
 };
 
 var name = "node-http-mock";
-var version = "0.2.5";
+var version = "0.3.0";
 var description = "A HTTP mock server for node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "./node_modules/.bin/rollup -c", "prestart": "npm run build", "start": "node ./dest/bundle.js", "test": "./node_modules/ava" };
 var keywords = ["rollup"];
 var author = "differui<differui@gmail.com>";
 var license = "MIT";
-var dependencies = { "babel-runtime": "^6.23.0", "http-proxy": "^1.16.2", "memory-cache": "^0.1.6", "mockjs": "^1.0.1-beta3" };
+var dependencies = { "babel-runtime": "^6.23.0", "colors": "^1.1.2", "http-proxy": "^1.16.2", "memory-cache": "^0.1.6", "mockjs": "^1.0.1-beta3" };
 var devDependencies = { "ava": "^0.19.1", "babel-plugin-external-helpers": "^6.22.0", "babel-plugin-transform-runtime": "^6.23.0", "babel-preset-env": "^1.4.0", "eslint": "^3.19.0", "eslint-config-airbnb-base": "^11.2.0", "eslint-plugin-import": "^2.3.0", "rollup": "^0.41.6", "rollup-plugin-babel": "^2.7.1", "rollup-plugin-commonjs": "^8.0.2", "rollup-plugin-eslint": "^3.0.0", "rollup-plugin-json": "^2.1.1", "rollup-plugin-node-resolve": "^3.0.0", "rollup-plugin-replace": "^1.1.1", "rollup-watch": "^3.2.2" };
 var pkg = {
 	name: name,
@@ -2292,6 +2293,14 @@ function writeResponseFailed(req, res, message) {
   res[cfg.close_switch_name] = true;
 }
 
+function mock$3(req) {
+  console.log(colors.green('Mock: ' + path.resolve('/', req.url)));
+}
+
+function proxy$1(req) {
+  console.log(colors.gray('Proxy: ' + path.resolve('/', req.url)));
+}
+
 function mock$1(req, res) {
   return new _Promise(function (resolve$$1) {
     var url = path.resolve('/', req.url);
@@ -2299,6 +2308,7 @@ function mock$1(req, res) {
 
     if (tpl) {
       writeResponseSucceed(req, res, mockjs.mock(tpl));
+      mock$3(req, res);
     }
 
     resolve$$1();
@@ -2447,7 +2457,9 @@ function createMockProxyServer() {
     throw new Error('Can not create proxy server without target');
   }
 
-  return httpProxy.createProxyServer(proxyCfg);
+  return httpProxy.createProxyServer(proxyCfg).on('proxyReq', function (proxyReq, req, res) {
+    return proxy$1(req, res);
+  });
 }
 
 function createMockServer() {
