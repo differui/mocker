@@ -1,5 +1,5 @@
-# mocker
-> API mock server
+# node-http-proxy
+> A HTTP mock server for node.js
 
 ## Setup
 

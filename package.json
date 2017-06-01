@@ -1,7 +1,7 @@
 {
-  "name": "mocker",
+  "name": "node-http-mock",
   "version": "0.0.1",
-  "description": "API mock server",
+  "description": "A HTTP mock server for node.js",
   "main": "dest/bundle.js",
   "scripts": {
     "build": "./node_modules/.bin/rollup -c",
