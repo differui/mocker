@@ -1,11 +1,12 @@
 import { createServer } from 'http'
 import { createProxyServer } from 'http-proxy'
 import { api } from './api'
-import { mock, overrideTpls } from './mock'
+import * as mock from './mock'
+import * as log from './log'
 import cfg from './config.json'
 
 export function createMock(opts = {}) {
-  overrideTpls(JSON.stringify(Object.assign({}, opts, cfg.mock)))
+  mock.overrideTpls(JSON.stringify(Object.assign({}, opts, cfg.mock)))
 }
 
 export function createMockProxyServer(opts = {}) {
@@ -16,6 +17,7 @@ export function createMockProxyServer(opts = {}) {
   }
 
   return createProxyServer(proxyCfg)
+    .on('proxyReq', (proxyReq, req, res) => log.proxy(req, res))
 }
 
 export function createMockServer(opts = {}) {
@@ -23,7 +25,7 @@ export function createMockServer(opts = {}) {
   const proxy = createMockProxyServer(opts.proxy)
   const q = [
     api,
-    mock,
+    mock.mock,
     (req, res) => new Promise((resolve, reject) => {
       try {
         proxy.web(req, res)

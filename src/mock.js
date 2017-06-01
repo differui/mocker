@@ -1,7 +1,9 @@
 import cache from 'memory-cache'
+import { green } from 'colors'
 import { resolve as pathResolve } from 'path'
 import { mock as render } from 'mockjs'
 import * as util from './util'
+import * as log from './log'
 
 export function mock(req, res) {
   return new Promise((resolve) => {
@@ -10,6 +12,7 @@ export function mock(req, res) {
 
     if (tpl) {
       util.writeResponseSucceed(req, res, render(tpl))
+      log.mock(req, res)
     }
 
     resolve()
