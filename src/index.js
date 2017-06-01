@@ -29,7 +29,7 @@ export function createMockServer(opts = {}) {
   ]
   const len = q.length
 
-  overrideTpls(opts.mock)
+  overrideTpls(JSON.stringify(opts.mock))
   createServer(async (req, res) => {
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i < len; i += 1) {
