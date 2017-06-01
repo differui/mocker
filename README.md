@@ -27,6 +27,11 @@ const server = createMockServer({
     target: 'your api host',
     changeOrigin: true,
   },
+  mock: {
+    '/path/to/api': {
+      "string|1-10": "★",
+    },
+  },
 })
 
 server.listen(5000)
@@ -37,14 +42,11 @@ console.log('Mock server is listening 5000')
 
 **`proxy`**
 
-Proxy settings for `http-proxy`.
+Proxy settings for [`http-proxy`](https://github.com/nodejitsu/node-http-proxy).
 
-## API
+**`mock`**
 
-+ `GET /templates` checkout current templates
-+ `PUT /templates/{url}` create/update specify template
-+ `DELETE /templates/{url}` remove specify template
-+ `PUT /templates/upload` override current templates
+Mock templates for [`mockjs`](http://mockjs.com/).
 
 ## License
 

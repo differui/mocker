@@ -4,6 +4,10 @@ import { api } from './api'
 import { mock } from './mock'
 import cfg from './config.json'
 
+export function createMock(opts = {}) {
+  mock.overrideTpls(opts)
+}
+
 export function createMockProxyServer(opts = {}) {
   const proxyCfg = Object.assign({}, opts.proxy, cfg.proxy)
 
@@ -15,13 +19,12 @@ export function createMockProxyServer(opts = {}) {
 }
 
 export function createMockServer(opts = {}) {
-  const proxy = createMockProxyServer(opts.proxy)
   const q = [
     api,
     mock,
     (req, res) => new Promise((resolve, reject) => {
       try {
-        proxy.web(req, res)
+        createMockProxyServer(opts.proxy).web(req, res)
         resolve()
       } catch (e) {
         reject(e)
@@ -30,6 +33,7 @@ export function createMockServer(opts = {}) {
   ]
   const len = q.length
 
+  createMock(opts.mock)
   createServer(async (req, res) => {
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i < len; i += 1) {
