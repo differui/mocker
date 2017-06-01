@@ -1,12 +1,8 @@
 import { createServer } from 'http'
 import { createProxyServer } from 'http-proxy'
 import { api } from './api'
-import { mock } from './mock'
+import { mock, overrideTpls } from './mock'
 import cfg from './config.json'
-
-export function createMock(opts = {}) {
-  mock.overrideTpls(opts)
-}
 
 export function createMockProxyServer(opts = {}) {
   const proxyCfg = Object.assign({}, opts.proxy, cfg.proxy)
@@ -33,7 +29,7 @@ export function createMockServer(opts = {}) {
   ]
   const len = q.length
 
-  createMock(opts.mock)
+  overrideTpls(opts.mock)
   createServer(async (req, res) => {
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i < len; i += 1) {
