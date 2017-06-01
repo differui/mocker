@@ -1,4 +1,4 @@
-# node-http-proxy
+# node-http-mock
 > A HTTP mock server for node.js
 
 ## Setup
@@ -20,7 +20,7 @@ npm run test
 ## Quick Start
 
 ```js
-import { createMockServer } from 'http-mock'
+import { createMockServer } from 'node-http-mock'
 
 const server = createMockServer({
   proxy: {
