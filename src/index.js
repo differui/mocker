@@ -30,7 +30,7 @@ export function createMockServer(opts = {}) {
   const len = q.length
 
   overrideTpls(JSON.stringify(opts.mock))
-  createServer(async (req, res) => {
+  return createServer(async (req, res) => {
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i < len; i += 1) {
       if (res[cfg.close_switch_name]) {
@@ -42,5 +42,5 @@ export function createMockServer(opts = {}) {
         throw e
       }
     }
-  }).listen(opts.port || cfg.port)
+  })
 }
