@@ -1949,6 +1949,17 @@ exports.default = function (fn) {
 
 var _asyncToGenerator = unwrapExports(asyncToGenerator);
 
+var $JSON = _core.JSON || (_core.JSON = {stringify: JSON.stringify});
+var stringify$1 = function stringify(it){ // eslint-disable-line no-unused-vars
+  return $JSON.stringify.apply($JSON, arguments);
+};
+
+var stringify = createCommonjsModule(function (module) {
+module.exports = { "default": stringify$1, __esModule: true };
+});
+
+var _JSON$stringify = unwrapExports(stringify);
+
 var f$1 = Object.getOwnPropertySymbols;
 
 var _objectGops = {
@@ -2042,17 +2053,6 @@ exports.default = function (obj, key, value) {
 });
 
 var _defineProperty = unwrapExports(defineProperty);
-
-var $JSON = _core.JSON || (_core.JSON = {stringify: JSON.stringify});
-var stringify$1 = function stringify(it){ // eslint-disable-line no-unused-vars
-  return $JSON.stringify.apply($JSON, arguments);
-};
-
-var stringify = createCommonjsModule(function (module) {
-module.exports = { "default": stringify$1, __esModule: true };
-});
-
-var _JSON$stringify = unwrapExports(stringify);
 
 // most Object methods by ES6 should accept primitives
 
@@ -2226,7 +2226,7 @@ var cfg = {
 };
 
 var name = "node-http-mock";
-var version = "0.2.0";
+var version = "0.2.1";
 var description = "A HTTP mock server for node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "./node_modules/.bin/rollup -c", "prestart": "npm run build", "start": "node ./dest/bundle.js", "test": "./node_modules/ava" };
@@ -2457,7 +2457,7 @@ function createMockServer() {
   }];
   var len = q.length;
 
-  overrideTpls(opts.mock);
+  overrideTpls(_JSON$stringify(opts.mock));
   http.createServer(function () {
     var _ref = _asyncToGenerator(index.mark(function _callee(req, res) {
       var i;
