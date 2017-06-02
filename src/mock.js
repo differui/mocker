@@ -1,8 +1,9 @@
 import cache from 'memory-cache'
 import { resolve as pathResolve } from 'path'
 import { mock as render } from 'mockjs'
-import * as util from './util'
+import pkg from '../package.json'
 import * as log from './log'
+import * as cfg from './config'
 
 export function mock(req, res) {
   return new Promise((resolve) => {
@@ -11,7 +12,12 @@ export function mock(req, res) {
 
     if (tpl) {
       log.mock(req)
-      util.writeResponseSucceed(req, res, render(tpl))
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'X-Proxy-By': `mocker/${pkg.version}`,
+      })
+      res.end(JSON.stringify(render(tpl)))
+      res[cfg.get('close_switch_name')] = true
       log.mock(req, res)
     }
 
