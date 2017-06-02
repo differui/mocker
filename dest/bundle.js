@@ -9,8 +9,8 @@ var path = require('path');
 var bodyParser = require('body-parser');
 var http = require('http');
 var httpProxy = require('http-proxy');
-var colors = require('colors');
 var mockjs = require('mockjs');
+var colors = require('colors');
 var boxen = _interopDefault(require('boxen'));
 var meow = _interopDefault(require('meow'));
 
@@ -2227,6 +2227,26 @@ var index$1 = {
 	keys: keys$3
 };
 
+var defaultConfig = {
+  close_switch_name: '__response_closed',
+  config_file_name: 'mock.config.js',
+  verbose: false,
+  port: 5000,
+  proxy: {},
+  mock: {}
+};
+var runtimeConfig = {};
+
+function get$1(key) {
+  return _Object$assign({}, defaultConfig, runtimeConfig)[key] || null;
+}
+
+function put$1(key, value) {
+  if (Object.hasOwnProperty.call(defaultConfig, key)) {
+    runtimeConfig[key] = value;
+  }
+}
+
 var name = "node-http-mock";
 var version = "0.4.1";
 var description = "A HTTP mock server for node.js";
@@ -2249,26 +2269,6 @@ var pkg = {
 	dependencies: dependencies,
 	devDependencies: devDependencies
 };
-
-var defaultConfig = {
-  close_switch_name: '__response_closed',
-  config_file_name: 'mock.config.js',
-  verbose: false,
-  port: 5000,
-  proxy: {},
-  mock: {}
-};
-var runtimeConfig = {};
-
-function get$1(key) {
-  return _Object$assign({}, defaultConfig, runtimeConfig)[key] || null;
-}
-
-function put$1(key, value) {
-  if (Object.hasOwnProperty.call(defaultConfig, key)) {
-    runtimeConfig[key] = value;
-  }
-}
 
 function writeResponseSucceed(req, res, data) {
   res.writeHead(200, {
@@ -2318,7 +2318,7 @@ function proxy(req, res) {
   }
 }
 
-function error$1(e, req, res) {
+function error$1(e, req) {
   console.log('    ' + colors.bold(colors.red(e.message)) + ' ' + path.resolve('/', req.url));
 }
 
@@ -2330,10 +2330,10 @@ function summary(config) {
 
   message += colors.green('Mocking!\n');
   message += '\n';
-  message += colors.bold('- Local:   ') + ('http://localhost:' + port + '\n');
-  message += colors.bold('- Porxy:   ') + (target + '\n');
-  message += colors.bold('- Config:  ') + ((config || colors.red('OFF')) + '\n');
-  message += colors.bold('- Verbose: ') + ('' + (verbose ? colors.green('ON') : colors.red('OFF')));
+  message += colors.bold('- Local:   ') + 'http://localhost:' + port + '\n';
+  message += '' + colors.bold('- Porxy:   ') + target + '\n';
+  message += '' + colors.bold('- Config:  ') + (config || colors.red('OFF')) + '\n';
+  message += '' + colors.bold('- Verbose: ') + (verbose ? colors.green('ON') : colors.red('OFF'));
 
   console.log(boxen(message, {
     padding: 1,
@@ -2463,7 +2463,7 @@ function createMockProxyServer() {
     throw new Error('Can not create proxy server without target');
   }
 
-  return httpProxy.createProxyServer(proxyCfg).on('proxyReq', function (proxyReq, req, res) {
+  return httpProxy.createProxyServer(proxyCfg).on('proxyReq', function (proxyReq, req) {
     if (req.body) {
       var bodyData = _JSON$stringify(req.body);
 
