@@ -1,7 +1,7 @@
 {
   "name": "node-http-mock",
   "bin_name": "mock",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "A HTTP mock server for node.js",
   "main": "dest/bundle.js",
   "scripts": {

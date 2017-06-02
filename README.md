@@ -56,7 +56,7 @@ Use `-r` option to recording these responses as ordinary JSON files in `.mock/`:
 mock -r [directory path]
 ```
 
-Press `Crtl-C` will terminate recording and create `index.js` tracing the JSON files.After that you can import the `index.js` into your config file manually:
+Press <kbd>Crtl-C</kbd> will terminate recording and create `index.js` tracing the JSON files.After that you can import the `index.js` into your config file manually:
 
 ```js
 module.exports = {

@@ -2231,7 +2231,7 @@ var index$1 = {
 
 var name = "node-http-mock";
 var bin_name = "mock";
-var version = "0.5.0";
+var version = "0.5.1";
 var description = "A HTTP mock server for node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "./node_modules/.bin/rollup -c && echo '#!/usr/bin/env node' > ./bin/mock.js && cat ./dest/bundle.js >> ./bin/mock.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "test": "./node_modules/ava" };
@@ -2240,7 +2240,7 @@ var author = "differui<differui@gmail.com>";
 var bin = { "mock": "bin/mock.js" };
 var files = ["bin"];
 var license = "MIT";
-var dependencies = { "babel-runtime": "^6.23.0", "body-parser": "^1.17.2", "boxen": "^1.1.0", "colors": "^1.1.2", "connect": "^3.6.2", "fs-extra": "^3.0.1", "http-proxy": "^1.16.2", "memory-cache": "^0.1.6", "meow": "^3.7.0" };
+var dependencies = { "babel-runtime": "^6.23.0", "body-parser": "^1.17.2", "boxen": "^1.1.0", "colors": "^1.1.2", "connect": "^3.6.2", "fs-extra": "^3.0.1", "http-proxy": "^1.16.2", "memory-cache": "^0.1.6", "meow": "^3.7.0", "sha1": "^1.1.1" };
 var devDependencies = { "ava": "^0.19.1", "babel-plugin-external-helpers": "^6.22.0", "babel-plugin-transform-runtime": "^6.23.0", "babel-preset-env": "^1.4.0", "eslint": "^3.19.0", "eslint-config-airbnb-base": "^11.2.0", "eslint-plugin-import": "^2.3.0", "rollup": "^0.41.6", "rollup-plugin-babel": "^2.7.1", "rollup-plugin-commonjs": "^8.0.2", "rollup-plugin-eslint": "^3.0.0", "rollup-plugin-json": "^2.1.1", "rollup-plugin-node-resolve": "^3.0.0", "rollup-plugin-replace": "^1.1.1", "rollup-watch": "^3.2.2" };
 var pkg = {
 	name: name,
@@ -2284,28 +2284,16 @@ function logRequest(type, req) {
   console.log(colors.white(type + ' ' + req.method + ' ' + path.resolve('/', req.url)));
 }
 
-function logResponse(type, req, res) {
-  console.log(colors.gray('' + ' '.repeat(type.length + 1) + res.statusCode + ' ' + path.resolve('/', req.url)));
+function mock$1(req) {
+  logRequest(colors.green('  Mock'), req);
 }
 
-function mock$1(req, res) {
-  if (!res) {
-    logRequest(colors.green('  Mock'), req);
-  } else {
-    logResponse('  Mock', req, res);
-  }
+function proxy(req) {
+  logRequest(colors.yellow(' Proxy'), req);
 }
 
-function proxy(req, res) {
-  if (!res) {
-    logRequest(colors.yellow(' Proxy'), req);
-  } else {
-    logResponse(' Proxy', req, res);
-  }
-}
-
-function record(jsonPath) {
-  console.log(colors.bold(colors.cyan('Record')) + ' ' + jsonPath);
+function record(jsonPath, req, res) {
+  console.log(colors.bold(colors.cyan('Record')) + ' ' + res.statusCode + ' ' + jsonPath);
 }
 
 function error$1(e, req) {
@@ -2347,7 +2335,6 @@ function mock$$1(req, res) {
       });
       res.end(_JSON$stringify(tpl));
       res[get$1('close_switch_name')] = true;
-      mock$1(req, res);
     }
 
     resolve$$1();
@@ -2491,11 +2478,230 @@ var cli = meow('\n    Usage\n      $ ' + pkg.bin_name + ' --config\n      $ ' + 
   }
 });
 
+var crypt = createCommonjsModule(function (module) {
+(function() {
+  var base64map
+      = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/',
+
+  crypt = {
+    // Bit-wise rotation left
+    rotl: function(n, b) {
+      return (n << b) | (n >>> (32 - b));
+    },
+
+    // Bit-wise rotation right
+    rotr: function(n, b) {
+      return (n << (32 - b)) | (n >>> b);
+    },
+
+    // Swap big-endian to little-endian and vice versa
+    endian: function(n) {
+      // If number given, swap endian
+      if (n.constructor == Number) {
+        return crypt.rotl(n, 8) & 0x00FF00FF | crypt.rotl(n, 24) & 0xFF00FF00;
+      }
+
+      // Else, assume array and swap all items
+      for (var i = 0; i < n.length; i++)
+        n[i] = crypt.endian(n[i]);
+      return n;
+    },
+
+    // Generate an array of any length of random bytes
+    randomBytes: function(n) {
+      for (var bytes = []; n > 0; n--)
+        bytes.push(Math.floor(Math.random() * 256));
+      return bytes;
+    },
+
+    // Convert a byte array to big-endian 32-bit words
+    bytesToWords: function(bytes) {
+      for (var words = [], i = 0, b = 0; i < bytes.length; i++, b += 8)
+        words[b >>> 5] |= bytes[i] << (24 - b % 32);
+      return words;
+    },
+
+    // Convert big-endian 32-bit words to a byte array
+    wordsToBytes: function(words) {
+      for (var bytes = [], b = 0; b < words.length * 32; b += 8)
+        bytes.push((words[b >>> 5] >>> (24 - b % 32)) & 0xFF);
+      return bytes;
+    },
+
+    // Convert a byte array to a hex string
+    bytesToHex: function(bytes) {
+      for (var hex = [], i = 0; i < bytes.length; i++) {
+        hex.push((bytes[i] >>> 4).toString(16));
+        hex.push((bytes[i] & 0xF).toString(16));
+      }
+      return hex.join('');
+    },
+
+    // Convert a hex string to a byte array
+    hexToBytes: function(hex) {
+      for (var bytes = [], c = 0; c < hex.length; c += 2)
+        bytes.push(parseInt(hex.substr(c, 2), 16));
+      return bytes;
+    },
+
+    // Convert a byte array to a base-64 string
+    bytesToBase64: function(bytes) {
+      for (var base64 = [], i = 0; i < bytes.length; i += 3) {
+        var triplet = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
+        for (var j = 0; j < 4; j++)
+          if (i * 8 + j * 6 <= bytes.length * 8)
+            base64.push(base64map.charAt((triplet >>> 6 * (3 - j)) & 0x3F));
+          else
+            base64.push('=');
+      }
+      return base64.join('');
+    },
+
+    // Convert a base-64 string to a byte array
+    base64ToBytes: function(base64) {
+      // Remove non-base-64 characters
+      base64 = base64.replace(/[^A-Z0-9+\/]/ig, '');
+
+      for (var bytes = [], i = 0, imod4 = 0; i < base64.length;
+          imod4 = ++i % 4) {
+        if (imod4 == 0) continue;
+        bytes.push(((base64map.indexOf(base64.charAt(i - 1))
+            & (Math.pow(2, -2 * imod4 + 8) - 1)) << (imod4 * 2))
+            | (base64map.indexOf(base64.charAt(i)) >>> (6 - imod4 * 2)));
+      }
+      return bytes;
+    }
+  };
+
+  module.exports = crypt;
+})();
+});
+
+var charenc = {
+  // UTF-8 encoding
+  utf8: {
+    // Convert a string to a byte array
+    stringToBytes: function(str) {
+      return charenc.bin.stringToBytes(unescape(encodeURIComponent(str)));
+    },
+
+    // Convert a byte array to a string
+    bytesToString: function(bytes) {
+      return decodeURIComponent(escape(charenc.bin.bytesToString(bytes)));
+    }
+  },
+
+  // Binary encoding
+  bin: {
+    // Convert a string to a byte array
+    stringToBytes: function(str) {
+      for (var bytes = [], i = 0; i < str.length; i++)
+        bytes.push(str.charCodeAt(i) & 0xFF);
+      return bytes;
+    },
+
+    // Convert a byte array to a string
+    bytesToString: function(bytes) {
+      for (var str = [], i = 0; i < bytes.length; i++)
+        str.push(String.fromCharCode(bytes[i]));
+      return str.join('');
+    }
+  }
+};
+
+var charenc_1 = charenc;
+
+var sha1 = createCommonjsModule(function (module) {
+(function() {
+  var crypt$$1 = crypt,
+      utf8 = charenc_1.utf8,
+      bin = charenc_1.bin,
+
+  // The core
+  sha1 = function (message) {
+    // Convert to byte array
+    if (message.constructor == String)
+      message = utf8.stringToBytes(message);
+    else if (typeof Buffer !== 'undefined' && typeof Buffer.isBuffer == 'function' && Buffer.isBuffer(message))
+      message = Array.prototype.slice.call(message, 0);
+    else if (!Array.isArray(message))
+      message = message.toString();
+
+    // otherwise assume byte array
+
+    var m  = crypt$$1.bytesToWords(message),
+        l  = message.length * 8,
+        w  = [],
+        H0 =  1732584193,
+        H1 = -271733879,
+        H2 = -1732584194,
+        H3 =  271733878,
+        H4 = -1009589776;
+
+    // Padding
+    m[l >> 5] |= 0x80 << (24 - l % 32);
+    m[((l + 64 >>> 9) << 4) + 15] = l;
+
+    for (var i = 0; i < m.length; i += 16) {
+      var a = H0,
+          b = H1,
+          c = H2,
+          d = H3,
+          e = H4;
+
+      for (var j = 0; j < 80; j++) {
+
+        if (j < 16)
+          w[j] = m[i + j];
+        else {
+          var n = w[j - 3] ^ w[j - 8] ^ w[j - 14] ^ w[j - 16];
+          w[j] = (n << 1) | (n >>> 31);
+        }
+
+        var t = ((H0 << 5) | (H0 >>> 27)) + H4 + (w[j] >>> 0) + (
+                j < 20 ? (H1 & H2 | ~H1 & H3) + 1518500249 :
+                j < 40 ? (H1 ^ H2 ^ H3) + 1859775393 :
+                j < 60 ? (H1 & H2 | H1 & H3 | H2 & H3) - 1894007588 :
+                         (H1 ^ H2 ^ H3) - 899497514);
+
+        H4 = H3;
+        H3 = H2;
+        H2 = (H1 << 30) | (H1 >>> 2);
+        H1 = H0;
+        H0 = t;
+      }
+
+      H0 += a;
+      H1 += b;
+      H2 += c;
+      H3 += d;
+      H4 += e;
+    }
+
+    return [H0, H1, H2, H3, H4];
+  },
+
+  // Public API
+  api = function (message, options) {
+    var digestbytes = crypt$$1.wordsToBytes(sha1(message));
+    return options && options.asBytes ? digestbytes :
+        options && options.asString ? bin.bytesToString(digestbytes) :
+        crypt$$1.bytesToHex(digestbytes);
+  };
+
+  api._blocksize = 16;
+  api._digestsize = 20;
+
+  module.exports = api;
+})();
+});
+
 var records = {};
 
-var proxy$2 = function () {
-  var _ref = _asyncToGenerator(index.mark(function _callee(proxyRes, req) {
-    var recordRoot, urlObj, pathname, jsonPath, jsonData;
+var record$1 = (function () {
+  var _ref = _asyncToGenerator(index.mark(function _callee(proxyRes, req, res) {
+    var recordRoot, _parseUrl, pathname, query, queryShaSuffix, relativePathname, relativeJsonPath, absoluteJsonPath, jsonData;
+
     return index.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
@@ -2503,52 +2709,73 @@ var proxy$2 = function () {
             recordRoot = get$1('record').root;
 
             if (!recordRoot) {
-              _context.next = 9;
+              _context.next = 20;
               break;
             }
 
-            urlObj = url.parse(req.url);
-            pathname = urlObj.pathname.indexOf('/') === 0 ? urlObj.pathname.substring(1) : urlObj.pathname;
-            jsonPath = path.resolve(recordRoot, pathname + '.json');
-            _context.next = 7;
+            _parseUrl = url.parse(req.url), pathname = _parseUrl.pathname, query = _parseUrl.query;
+            queryShaSuffix = query ? '_' + sha1(query) : '';
+            relativePathname = pathname.indexOf('/') === 0 ? pathname.substring(1) : pathname;
+            relativeJsonPath = '' + relativePathname + queryShaSuffix + '.json';
+            absoluteJsonPath = path.resolve(recordRoot, relativeJsonPath);
+            jsonData = void 0;
+            _context.prev = 8;
+            _context.t0 = JSON;
+            _context.next = 12;
             return parseBody(proxyRes);
 
-          case 7:
-            jsonData = _context.sent;
+          case 12:
+            _context.t1 = _context.sent;
+            jsonData = _context.t0.parse.call(_context.t0, _context.t1);
+            _context.next = 19;
+            break;
 
+          case 16:
+            _context.prev = 16;
+            _context.t2 = _context['catch'](8);
 
-            try {
-              records[urlObj.pathname] = './' + pathname + '.json';
-              fsExtra.ensureFileSync(jsonPath);
-              fsExtra.writeJsonSync(jsonPath, JSON.parse(jsonData), { spaces: 2 });
-              record(jsonPath);
-            } catch (e) {
-              error$1(e, req);
+            error$1(_context.t2, req);
+
+          case 19:
+
+            if (jsonData) {
+              records[req.url] = './' + relativeJsonPath;
+              fsExtra.ensureFileSync(absoluteJsonPath);
+              fsExtra.writeJsonSync(absoluteJsonPath, jsonData, { spaces: 2 });
+              record(absoluteJsonPath, req, res);
             }
 
-          case 9:
+          case 20:
           case 'end':
             return _context.stop();
         }
       }
-    }, _callee, this);
+    }, _callee, this, [[8, 16]]);
   }));
 
-  return function proxy$$1(_x, _x2) {
+  function record$$1(_x, _x2, _x3) {
     return _ref.apply(this, arguments);
-  };
-}();
+  }
+
+  return record$$1;
+})();
 
 process.on('SIGINT', function () {
   var recordRoot = get$1('record').root;
 
   if (recordRoot) {
-    var requireData = [];
+    var absoluteIndexPath = path.resolve(recordRoot, 'index.js');
+    var absoluteRecordsPath = path.resolve(recordRoot, 'records.json');
+    var mergeRecords = void 0;
 
-    _Object$keys(records).forEach(function (key) {
-      return requireData.push('\'' + key + '\': require(\'' + records[key] + '\')');
-    });
-    fsExtra.outputFileSync(path.resolve(recordRoot, 'index.js'), 'module.exports = {\n  ' + requireData.join(',\n  ') + '\n}');
+    try {
+      mergeRecords = _Object$assign({}, records, require(absoluteRecordsPath));
+    } catch (e) {
+      mergeRecords = records;
+    }
+
+    fsExtra.outputFileSync(absoluteRecordsPath, _JSON$stringify(mergeRecords, null, 2));
+    fsExtra.outputFileSync(absoluteIndexPath, ['const apiMapToJson = require(\'./records.json\')', 'const mockData = {}', '', 'Object.keys(apiMapToJson).forEach(key => mockData[key] = require(apiMapToJson[key]))', 'module.exports = mockData'].join('\n'));
   }
   process.exit();
 });
@@ -2559,10 +2786,9 @@ var onProxyRes = function () {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            proxy(req, res);
-            proxy$2(proxyRes, req, res);
+            record$1(proxyRes, req, res);
 
-          case 2:
+          case 1:
           case 'end':
             return _context.stop();
         }
@@ -2712,11 +2938,7 @@ function run() {
     opts.verbose = true;
   }
   if (config) {
-    try {
-      _Object$assign(opts, require(path.resolve('.', config)));
-    } catch (e) {
-      throw new Error('Can not load config file ' + config);
-    }
+    _Object$assign(opts, require(path.resolve('.', config)));
   }
   if (target) {
     opts.proxy = opts.proxy || {};
