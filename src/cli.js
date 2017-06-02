@@ -4,7 +4,7 @@ import pkg from '../package.json'
 export default meow(`
     Usage
       $ ${pkg.bin_name} --config
-      $ ${pkg.bin_name} --target 'http://my-api-server.com:8888'
+      $ ${pkg.bin_name} --target [api server host]
 
     Options
       -c, --config  Use config file

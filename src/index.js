@@ -109,6 +109,8 @@ function run() {
   if (opts.proxy && opts.proxy.target) {
     createMockServer(opts)
     log.summary(config)
+  } else {
+    console.log(cli.help)
   }
 }
 
