@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -2248,23 +2249,29 @@ function put$1(key, value) {
 }
 
 var name = "node-http-mock";
-var version = "0.4.1";
+var bin_name = "mock";
+var version = "0.4.5";
 var description = "A HTTP mock server for node.js";
 var main = "dest/bundle.js";
-var scripts = { "build": "./node_modules/.bin/rollup -c", "prestart": "npm run build", "start": "node ./dest/bundle.js", "test": "./node_modules/ava" };
+var scripts = { "build": "./node_modules/.bin/rollup -c && echo '#!/usr/bin/env node' > ./bin/mock.js && cat ./dest/bundle.js >> ./bin/mock.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "test": "./node_modules/ava" };
 var keywords = ["rollup"];
 var author = "differui<differui@gmail.com>";
+var bin = { "mock": "bin/mock.js" };
+var files = ["bin", "dest"];
 var license = "MIT";
 var dependencies = { "babel-runtime": "^6.23.0", "body-parser": "^1.17.2", "boxen": "^1.1.0", "colors": "^1.1.2", "connect": "^3.6.2", "http-proxy": "^1.16.2", "memory-cache": "^0.1.6", "meow": "^3.7.0", "mockjs": "^1.0.1-beta3" };
 var devDependencies = { "ava": "^0.19.1", "babel-plugin-external-helpers": "^6.22.0", "babel-plugin-transform-runtime": "^6.23.0", "babel-preset-env": "^1.4.0", "eslint": "^3.19.0", "eslint-config-airbnb-base": "^11.2.0", "eslint-plugin-import": "^2.3.0", "rollup": "^0.41.6", "rollup-plugin-babel": "^2.7.1", "rollup-plugin-commonjs": "^8.0.2", "rollup-plugin-eslint": "^3.0.0", "rollup-plugin-json": "^2.1.1", "rollup-plugin-node-resolve": "^3.0.0", "rollup-plugin-replace": "^1.1.1", "rollup-watch": "^3.2.2" };
 var pkg = {
 	name: name,
+	bin_name: bin_name,
 	version: version,
 	description: description,
 	main: main,
 	scripts: scripts,
 	keywords: keywords,
 	author: author,
+	bin: bin,
+	files: files,
 	license: license,
 	dependencies: dependencies,
 	devDependencies: devDependencies
@@ -2442,7 +2449,7 @@ function api(req, res) {
   }
 }
 
-var cli = meow('\n    Usage\n      $ ' + pkg.name + ' --config\n      $ ' + pkg.name + ' --target \'http://my-api-server.com:8888\'\n\n    Options\n      -c, --config  Use config file\n      -t, --target  Proxy target url\n      -p, --port    Port number for mock server\n      -v, --verbose Redirect HTTP streams to stdout\n', {
+var cli = meow('\n    Usage\n      $ ' + pkg.bin_name + ' --config\n      $ ' + pkg.bin_name + ' --target \'http://my-api-server.com:8888\'\n\n    Options\n      -c, --config  Use config file\n      -t, --target  Proxy target url\n      -p, --port    Port number for mock server\n      -v, --verbose Redirect HTTP streams to stdout\n', {
   boolean: ['verbose'],
   string: ['config', 'target'],
   number: ['port'],

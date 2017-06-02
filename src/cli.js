@@ -3,8 +3,8 @@ import pkg from '../package.json'
 
 export default meow(`
     Usage
-      $ ${pkg.name} --config
-      $ ${pkg.name} --target 'http://my-api-server.com:8888'
+      $ ${pkg.bin_name} --config
+      $ ${pkg.bin_name} --target 'http://my-api-server.com:8888'
 
     Options
       -c, --config  Use config file

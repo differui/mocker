@@ -12,7 +12,7 @@ npm install node-http-mock -g
 And run this command in your termial:
 
 ```bash
-node-http-mock -t [api host] -p [local port] -c [config file]
+mock -t [api host] -p [local port] -c [config file]
 ```
 
 ### Options
@@ -20,7 +20,7 @@ node-http-mock -t [api host] -p [local port] -c [config file]
 Run this command to see a list of all available options:
 
 ```bash
-node-http-mock --help
+mock --help
 ```
 
 ### Config
