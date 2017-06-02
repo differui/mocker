@@ -1,6 +1,6 @@
 {
   "name": "node-http-mock",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "A HTTP mock server for node.js",
   "main": "dest/bundle.js",
   "scripts": {
@@ -16,9 +16,13 @@
   "license": "MIT",
   "dependencies": {
     "babel-runtime": "^6.23.0",
+    "body-parser": "^1.17.2",
+    "boxen": "^1.1.0",
     "colors": "^1.1.2",
+    "connect": "^3.6.2",
     "http-proxy": "^1.16.2",
     "memory-cache": "^0.1.6",
+    "meow": "^3.7.0",
     "mockjs": "^1.0.1-beta3"
   },
   "devDependencies": {

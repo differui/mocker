@@ -2,11 +2,17 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
+var connect = _interopDefault(require('connect'));
+var path = require('path');
+var bodyParser = require('body-parser');
 var http = require('http');
 var httpProxy = require('http-proxy');
-var path = require('path');
 var colors = require('colors');
 var mockjs = require('mockjs');
+var boxen = _interopDefault(require('boxen'));
+var meow = _interopDefault(require('meow'));
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -1438,7 +1444,7 @@ var ONREADYSTATECHANGE = 'onreadystatechange';
 var defer;
 var channel;
 var port;
-var run = function(){
+var run$1 = function(){
   var id = +this;
   if(queue.hasOwnProperty(id)){
     var fn = queue[id];
@@ -1447,7 +1453,7 @@ var run = function(){
   }
 };
 var listener = function(event){
-  run.call(event.data);
+  run$1.call(event.data);
 };
 // Node.js 0.9+ & IE10+ has setImmediate, otherwise:
 if(!setTask || !clearTask){
@@ -1466,7 +1472,7 @@ if(!setTask || !clearTask){
   // Node.js 0.8-
   if(_cof(process$1) == 'process'){
     defer = function(id){
-      process$1.nextTick(_ctx(run, id, 1));
+      process$1.nextTick(_ctx(run$1, id, 1));
     };
   // Browsers with MessageChannel, includes WebWorkers
   } else if(MessageChannel){
@@ -1486,13 +1492,13 @@ if(!setTask || !clearTask){
     defer = function(id){
       _html.appendChild(_domCreate('script'))[ONREADYSTATECHANGE] = function(){
         _html.removeChild(this);
-        run.call(id);
+        run$1.call(id);
       };
     };
   // Rest old browsers
   } else {
     defer = function(id){
-      setTimeout(_ctx(run, id, 1), 0);
+      setTimeout(_ctx(run$1, id, 1), 0);
     };
   }
 }
@@ -1950,6 +1956,43 @@ exports.default = function (fn) {
 
 var _asyncToGenerator = unwrapExports(asyncToGenerator);
 
+// most Object methods by ES6 should accept primitives
+
+var _objectSap = function(KEY, exec){
+  var fn  = (_core.Object || {})[KEY] || Object[KEY]
+    , exp = {};
+  exp[KEY] = exec(fn);
+  _export(_export.S + _export.F * _fails(function(){ fn(1); }), 'Object', exp);
+};
+
+// 19.1.2.14 Object.keys(O)
+
+
+_objectSap('keys', function(){
+  return function keys(it){
+    return _objectKeys(_toObject(it));
+  };
+});
+
+var keys$1 = _core.Object.keys;
+
+var keys = createCommonjsModule(function (module) {
+module.exports = { "default": keys$1, __esModule: true };
+});
+
+var _Object$keys = unwrapExports(keys);
+
+var $JSON = _core.JSON || (_core.JSON = {stringify: JSON.stringify});
+var stringify$1 = function stringify(it){ // eslint-disable-line no-unused-vars
+  return $JSON.stringify.apply($JSON, arguments);
+};
+
+var stringify = createCommonjsModule(function (module) {
+module.exports = { "default": stringify$1, __esModule: true };
+});
+
+var _JSON$stringify = unwrapExports(stringify);
+
 var f$1 = Object.getOwnPropertySymbols;
 
 var _objectGops = {
@@ -2003,17 +2046,6 @@ module.exports = { "default": assign$1, __esModule: true };
 
 var _Object$assign = unwrapExports(assign);
 
-var $JSON = _core.JSON || (_core.JSON = {stringify: JSON.stringify});
-var stringify$1 = function stringify(it){ // eslint-disable-line no-unused-vars
-  return $JSON.stringify.apply($JSON, arguments);
-};
-
-var stringify = createCommonjsModule(function (module) {
-module.exports = { "default": stringify$1, __esModule: true };
-});
-
-var _JSON$stringify = unwrapExports(stringify);
-
 // 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
 _export(_export.S + _export.F * !_descriptors, 'Object', {defineProperty: _objectDp.f});
 
@@ -2054,32 +2086,6 @@ exports.default = function (obj, key, value) {
 });
 
 var _defineProperty = unwrapExports(defineProperty);
-
-// most Object methods by ES6 should accept primitives
-
-var _objectSap = function(KEY, exec){
-  var fn  = (_core.Object || {})[KEY] || Object[KEY]
-    , exp = {};
-  exp[KEY] = exec(fn);
-  _export(_export.S + _export.F * _fails(function(){ fn(1); }), 'Object', exp);
-};
-
-// 19.1.2.14 Object.keys(O)
-
-
-_objectSap('keys', function(){
-  return function keys(it){
-    return _objectKeys(_toObject(it));
-  };
-});
-
-var keys$1 = _core.Object.keys;
-
-var keys = createCommonjsModule(function (module) {
-module.exports = { "default": keys$1, __esModule: true };
-});
-
-var _Object$keys = unwrapExports(keys);
 
 var cache = Object.create(null);
 var debug = false;
@@ -2221,15 +2227,6 @@ var index$1 = {
 	keys: keys$3
 };
 
-var close_switch_name = "__response_closed";
-var proxy = {};
-var mock$2 = {};
-var cfg = {
-	close_switch_name: close_switch_name,
-	proxy: proxy,
-	mock: mock$2
-};
-
 var name = "node-http-mock";
 var version = "0.3.1";
 var description = "A HTTP mock server for node.js";
@@ -2238,7 +2235,7 @@ var scripts = { "build": "./node_modules/.bin/rollup -c", "prestart": "npm run b
 var keywords = ["rollup"];
 var author = "differui<differui@gmail.com>";
 var license = "MIT";
-var dependencies = { "babel-runtime": "^6.23.0", "colors": "^1.1.2", "http-proxy": "^1.16.2", "memory-cache": "^0.1.6", "mockjs": "^1.0.1-beta3" };
+var dependencies = { "babel-runtime": "^6.23.0", "body-parser": "^1.17.2", "boxen": "^1.1.0", "colors": "^1.1.2", "connect": "^3.6.2", "http-proxy": "^1.16.2", "memory-cache": "^0.1.6", "meow": "^3.7.0", "mockjs": "^1.0.1-beta3" };
 var devDependencies = { "ava": "^0.19.1", "babel-plugin-external-helpers": "^6.22.0", "babel-plugin-transform-runtime": "^6.23.0", "babel-preset-env": "^1.4.0", "eslint": "^3.19.0", "eslint-config-airbnb-base": "^11.2.0", "eslint-plugin-import": "^2.3.0", "rollup": "^0.41.6", "rollup-plugin-babel": "^2.7.1", "rollup-plugin-commonjs": "^8.0.2", "rollup-plugin-eslint": "^3.0.0", "rollup-plugin-json": "^2.1.1", "rollup-plugin-node-resolve": "^3.0.0", "rollup-plugin-replace": "^1.1.1", "rollup-watch": "^3.2.2" };
 var pkg = {
 	name: name,
@@ -2253,20 +2250,24 @@ var pkg = {
 	devDependencies: devDependencies
 };
 
-function parseBody(req) {
-  var body = '';
+var defaultConfig = {
+  close_switch_name: '__response_closed',
+  config_file_name: 'mock.config.js',
+  verbose: false,
+  port: 5000,
+  proxy: {},
+  mock: {}
+};
+var runtimeConfig = {};
 
-  return new _Promise(function (resolve$$1, reject) {
-    req.on('data', function (d) {
-      body += d;
-    });
-    req.on('end', function () {
-      return resolve$$1(body);
-    });
-    req.on('error', function (e) {
-      return reject(e);
-    });
-  });
+function get$1(key) {
+  return _Object$assign({}, defaultConfig, runtimeConfig)[key] || null;
+}
+
+function put$1(key, value) {
+  if (Object.hasOwnProperty.call(defaultConfig, key)) {
+    runtimeConfig[key] = value;
+  }
 }
 
 function writeResponseSucceed(req, res, data) {
@@ -2278,7 +2279,7 @@ function writeResponseSucceed(req, res, data) {
     succeeded: true,
     data: data
   }, null, 2));
-  res[cfg.close_switch_name] = true;
+  res[get$1('close_switch_name')] = true;
 }
 
 function writeResponseFailed(req, res, message) {
@@ -2290,15 +2291,55 @@ function writeResponseFailed(req, res, message) {
     succeeded: false,
     message: message
   }, null, 2));
-  res[cfg.close_switch_name] = true;
+  res[get$1('close_switch_name')] = true;
 }
 
-function mock$3(req) {
-  console.log(colors.green('Mock: ' + req.method + ' ' + path.resolve('/', req.url)));
+function logRequest(type, req) {
+  console.log(colors.white(type + ': ' + req.method + ' ' + path.resolve('/', req.url)));
 }
 
-function proxy$1(req) {
-  console.log(colors.gray('Proxy: ' + req.method + ' ' + path.resolve('/', req.url)));
+function logResponse(type, req, res) {
+  console.log(colors.gray('' + ' '.repeat(type.length + 2) + res.statusCode + ' ' + path.resolve('/', req.url)));
+}
+
+function mock$2(req, res) {
+  if (!res) {
+    logRequest(colors.green(' Mock'), req);
+  } else {
+    logResponse(' Mock', req, res);
+  }
+}
+
+function proxy(req, res) {
+  if (!res) {
+    logRequest(colors.yellow('Proxy'), req);
+  } else {
+    logResponse('Proxy', req, res);
+  }
+}
+
+function error$1(e, req, res) {
+  console.log('    ' + colors.bold(colors.red(e.message)) + ' ' + path.resolve('/', req.url));
+}
+
+function summary(config) {
+  var port = get$1('port');
+  var target = get$1('proxy').target;
+  var verbose = get$1('verbose');
+  var message = '';
+
+  message += colors.green('Mocking!\n');
+  message += '\n';
+  message += colors.bold('- Local:   ') + ('http://localhost:' + port + '\n');
+  message += colors.bold('- Porxy:   ') + (target + '\n');
+  message += colors.bold('- Config:  ') + ((config || colors.red('OFF')) + '\n');
+  message += colors.bold('- Verbose: ') + ('' + (verbose ? colors.green('ON') : colors.red('OFF')));
+
+  console.log(boxen(message, {
+    padding: 1,
+    borderStyle: 'single',
+    borderColor: 'green'
+  }));
 }
 
 function mock$1(req, res) {
@@ -2307,8 +2348,9 @@ function mock$1(req, res) {
     var tpl = index$1.get(url);
 
     if (tpl) {
+      mock$2(req);
       writeResponseSucceed(req, res, mockjs.mock(tpl));
-      mock$3(req, res);
+      mock$2(req, res);
     }
 
     resolve$$1();
@@ -2317,7 +2359,12 @@ function mock$1(req, res) {
 
 function createOrUpdateTpl(url, tpl) {
   try {
-    index$1.put(url, JSON.parse(tpl));
+    var theTpl = tpl;
+
+    if (typeof theTpl !== 'string') {
+      theTpl = _JSON$stringify(theTpl);
+    }
+    index$1.put(url, JSON.parse(theTpl));
   } catch (e) {
     throw new Error('Can not create or update template: ' + url);
   }
@@ -2338,127 +2385,98 @@ function getTpls() {
 }
 
 function overrideTpls(tpls) {
-  var t = JSON.parse(tpls);
+  var theTpls = tpls;
+
+  if (typeof theTpls !== 'string') {
+    theTpls = _JSON$stringify(theTpls);
+  }
 
   index$1.clear();
-  _Object$keys(JSON.parse(tpls)).forEach(function (url) {
-    return createOrUpdateTpl(url, _JSON$stringify(t[url]));
+  theTpls = JSON.parse(theTpls);
+  _Object$keys(theTpls).forEach(function (url) {
+    return createOrUpdateTpl(url, theTpls[url]);
   });
 }
 
-var api = function () {
-  var _ref = _asyncToGenerator(index.mark(function _callee(req, res) {
-    var url, method, body, d, dateStr, u;
-    return index.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            url = path.resolve('/', req.url);
-            method = req.method;
-            _context.next = 4;
-            return parseBody(req);
+function api(req, res) {
+  var url = path.resolve('/', req.url);
+  var method = req.method;
 
-          case 4:
-            body = _context.sent;
+  if (method === 'GET' && (url === '/' || url === '/templates')) {
+    writeResponseSucceed(req, res, getTpls());
+  } else if (method === 'GET' && url === '/templates/download') {
+    var d = new Date();
+    var dateStr = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
 
-            if (!(method === 'GET' && (url === '/' || url === '/templates'))) {
-              _context.next = 9;
-              break;
-            }
+    res.setHeader('Content-Disposition', 'attachment; filename=mock_' + dateStr);
+    writeResponseSucceed(req, res, getTpls());
+  } else if (method === 'PUT' && url === '/templates/upload') {
+    try {
+      overrideTpls(req.body);
+      writeResponseSucceed(req, res, getTpls());
+    } catch (e) {
+      writeResponseFailed(req, res, e.message);
+    }
+  } else if (url.indexOf('/templates/') === 0) {
+    var u = url.substring('/templates/'.length - 1);
 
-            writeResponseSucceed(req, res, getTpls());
-            _context.next = 29;
-            break;
-
-          case 9:
-            if (!(method === 'GET' && url === '/templates/download')) {
-              _context.next = 16;
-              break;
-            }
-
-            d = new Date();
-            dateStr = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
-
-
-            res.setHeader('Content-Disposition', 'attachment; filename=mock_' + dateStr);
-            writeResponseSucceed(req, res, getTpls());
-            _context.next = 29;
-            break;
-
-          case 16:
-            if (!(method === 'PUT' && url === '/templates/upload')) {
-              _context.next = 20;
-              break;
-            }
-
-            try {
-              overrideTpls(body);
-              writeResponseSucceed(req, res, getTpls());
-            } catch (e) {
-              writeResponseFailed(req, res, e.message);
-            }
-            _context.next = 29;
-            break;
-
-          case 20:
-            if (!(url.indexOf('/templates/') === 0)) {
-              _context.next = 29;
-              break;
-            }
-
-            u = url.substring('/templates/'.length - 1);
-            _context.t0 = method;
-            _context.next = _context.t0 === 'PUT' ? 25 : _context.t0 === 'DELETE' ? 27 : 29;
-            break;
-
-          case 25:
-            try {
-              createOrUpdateTpl(u, body);
-              writeResponseSucceed(req, res, _defineProperty({}, u, getTpls()[u]));
-            } catch (e) {
-              writeResponseFailed(req, res, e.message);
-            }
-            return _context.abrupt('break', 29);
-
-          case 27:
-            try {
-              removeTpl(u);
-              writeResponseSucceed(req, res, getTpls());
-            } catch (e) {
-              writeResponseFailed(req, res, e.message);
-            }
-            return _context.abrupt('break', 29);
-
-          case 29:
-          case 'end':
-            return _context.stop();
+    switch (method) {
+      case 'PUT':
+        try {
+          createOrUpdateTpl(u, req.body);
+          writeResponseSucceed(req, res, _defineProperty({}, u, getTpls()[u]));
+        } catch (e) {
+          writeResponseFailed(req, res, e.message);
         }
-      }
-    }, _callee, this);
-  }));
-
-  return function api(_x, _x2) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-function createMock() {
-  var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-  overrideTpls(_JSON$stringify(_Object$assign({}, opts, cfg.mock)));
+        break;
+      case 'DELETE':
+        try {
+          removeTpl(u);
+          writeResponseSucceed(req, res, getTpls());
+        } catch (e) {
+          writeResponseFailed(req, res, e.message);
+        }
+        break;
+      default:
+    }
+  }
 }
 
-function createMockProxyServer() {
-  var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+var cli = meow('\n    Usage\n      $ ' + pkg.name + ' --config\n      $ ' + pkg.name + ' --target \'http://my-api-server.com:8888\'\n\n    Options\n      -c, --config  Use config file\n      -t, --target  Proxy target url\n      -p, --port    Port number for mock server\n      -V, --verbose Redirect HTTP streams to stdout\n', {
+  boolean: ['verbose'],
+  string: ['config', 'target'],
+  number: ['port'],
+  alias: {
+    c: 'config',
+    t: 'target',
+    p: 'port',
+    v: 'verbose'
+  }
+});
 
-  var proxyCfg = _Object$assign({}, opts, cfg.proxy);
+function createMockProxyServer() {
+  var proxyCfg = _Object$assign({
+    agent: new http.Agent({ maxSockets: Number.MAX_VALUE })
+  }, get$1('proxy'));
 
   if (!proxyCfg.target) {
     throw new Error('Can not create proxy server without target');
   }
 
   return httpProxy.createProxyServer(proxyCfg).on('proxyReq', function (proxyReq, req, res) {
-    return proxy$1(req, res);
+    if (req.body) {
+      var bodyData = _JSON$stringify(req.body);
+
+      proxyReq.setHeader('Content-Type', 'application/json');
+      proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+      proxyReq.write(bodyData);
+    }
+    proxy(req);
+  }).on('proxyRes', function (proxyReq, req, res) {
+    return proxy(req, res);
+  }).on('error', function (e, req, res) {
+    writeResponseFailed(req, res, e.message);
+    error$1(e, req, res);
   });
 }
 
@@ -2467,8 +2485,12 @@ function createMockServer() {
 
   var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-  createMock(opts.mock);
-  var proxy$$1 = createMockProxyServer(opts.proxy);
+  _Object$keys(opts).forEach(function (key) {
+    return put$1(key, opts[key]);
+  });
+  overrideTpls(get$1('mock'));
+
+  var proxy$$1 = createMockProxyServer();
   var q = [api, mock$1, function (req, res) {
     return new _Promise(function (resolve$$1, reject) {
       try {
@@ -2480,8 +2502,11 @@ function createMockServer() {
     });
   }];
   var len = q.length;
-
-  return http.createServer(function () {
+  var app = connect().use(bodyParser.json({
+    extended: true
+  })).use(bodyParser.urlencoded({
+    extended: true
+  })).use(function () {
     var _ref = _asyncToGenerator(index.mark(function _callee(req, res) {
       var i;
       return index.wrap(function _callee$(_context) {
@@ -2496,7 +2521,7 @@ function createMockServer() {
                 break;
               }
 
-              if (!res[cfg.close_switch_name]) {
+              if (!res[get$1('close_switch_name')]) {
                 _context.next = 4;
                 break;
               }
@@ -2530,12 +2555,53 @@ function createMockServer() {
       }, _callee, _this, [[4, 9]]);
     }));
 
-    return function (_x4, _x5) {
+    return function (_x2, _x3) {
       return _ref.apply(this, arguments);
     };
   }());
+
+  return http.createServer(app).on('upgrade', function (req, socket, head) {
+    return proxy$$1.ws(req, socket, head);
+  }).listen(get$1('port'));
 }
 
-exports.createMock = createMock;
+function run() {
+  var opts = {};
+  var _cli$flags = cli.flags,
+      verbose = _cli$flags.verbose,
+      target = _cli$flags.target,
+      port = _cli$flags.port;
+
+  var config = Object.hasOwnProperty.call(cli.flags, 'config') && (cli.flags.config || get$1('config_file_name'));
+
+  if (verbose) {
+    opts.verbose = true;
+  }
+  if (config) {
+    try {
+      var configFile = require(path.resolve('.', config));
+      _Object$keys(configFile).forEach(function (key) {
+        return put$1(key, configFile[key]);
+      });
+    } catch (e) {
+      throw new Error('Can not load config file ' + config);
+    }
+  }
+  if (target) {
+    opts.proxy = opts.proxy || {};
+    opts.proxy.target = target;
+  }
+  if (port) {
+    opts.port = port;
+  }
+
+  if (opts.proxy && opts.proxy.target) {
+    createMockServer(opts);
+    summary(config);
+  }
+}
+
+run();
+
 exports.createMockProxyServer = createMockProxyServer;
 exports.createMockServer = createMockServer;
