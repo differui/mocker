@@ -8,7 +8,7 @@ export default meow(`
 
     Options
       -c, --config  Use config file
-      -r, --reocrd  Record HTTP response to given directory
+      -r, --reocrd  Record HTTP response to current directory
       -t, --target  Proxy target url
       -h, --host    Mock server host name
       -p, --port    Mock server port number
@@ -17,10 +17,10 @@ export default meow(`
 `, {
   boolean: [
     'verbose',
+    'record',
   ],
   string: [
     'config',
-    'record',
     'target',
     'host',
   ],

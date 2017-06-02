@@ -1,8 +1,10 @@
 const defaultConfig = {
   close_switch_name: '__response_closed',
   config_file_name: 'mock.config.js',
+  record_dir_name: '.mock',
   verbose: false,
   port: 5000,
+  record: {},
   proxy: {},
   mock: {},
 }

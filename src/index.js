@@ -46,7 +46,7 @@ export function createMockServer(opts = {}) {
 
 function run() {
   const opts = {}
-  const { verbose, target, host, port } = cli.flags
+  const { verbose, target, port, record } = cli.flags
   const config = Object.hasOwnProperty.call(cli.flags, 'config') &&
     (cli.flags.config || cfg.get('config_file_name'))
 
@@ -64,11 +64,12 @@ function run() {
     opts.proxy = opts.proxy || {}
     opts.proxy.target = target
   }
-  if (host) {
-    opts.host = host
-  }
   if (port) {
     opts.port = port
+  }
+  if (record) {
+    opts.record = opts.record || {}
+    opts.record.root = resolvePath(__dirname, cfg.get('record_dir_name'))
   }
   if (opts.proxy && opts.proxy.target && opts.proxy.target.indexOf('http://') !== 0) {
     opts.proxy.target = `http://${opts.proxy.target}`

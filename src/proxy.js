@@ -1,6 +1,6 @@
 import { Agent } from 'http'
 import { createProxyServer } from 'http-proxy'
-import * as util from './util'
+import * as record from './record'
 import * as log from './log'
 import * as cfg from './config'
 
@@ -17,12 +17,18 @@ function onProxyReq(proxyReq, req) {
   log.proxy(req)
 }
 
-function onProxyRes(proxyReq, req, res) {
+async function onProxyRes(proxyRes, req, res) {
   log.proxy(req, res)
+  record.proxy(proxyRes, req, res)
 }
 
 function onProxyError(e, req, res) {
-  util.writeResponseFailed(req, res, e.message)
+  res.writeHead(500, {
+    'Content-Type': 'application/json',
+  })
+  res.end(JSON.stringify({
+    message: e.message,
+  }))
   log.error(e, req, res)
 }
 

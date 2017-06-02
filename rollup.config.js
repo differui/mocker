@@ -15,6 +15,7 @@ export default {
     'meow',
     'connect',
     'body-parser',
+    'fs-extra',
     'path',
     'https',
     'url',

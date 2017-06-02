@@ -50,18 +50,18 @@ mock -c my.mock.config.js # customize config file
 [method] [url] ? [query string]
 ```
 
-Use `-r` option to recording these responses to ordinary JSON files and create a `mock.js` tracing those files:
+Use `-r` option to recording these responses as ordinary JSON files in `.mock/`:
 
 ```bash
 mock -r [directory path]
 ```
 
-Press `Crtl-C` will terminate recording.After that you can import the `mock.js` into your config file manually:
+Press `Crtl-C` will terminate recording and create `index.js` tracing the JSON files.After that you can import the `index.js` into your config file manually:
 
 ```js
 module.exports = {
   // ...
-  mock: require('./mock.js'),
+  mock: require('./.mock/index.js'),
 }
 ```
 

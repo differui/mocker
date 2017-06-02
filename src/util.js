@@ -21,3 +21,13 @@ export function writeResponseFailed(req, res, message) {
   }, null, 2))
   res[cfg.get('close_switch_name')] = true
 }
+
+export function parseBody(req) {
+  let body = ''
+
+  return new Promise((resolve, reject) => {
+    req.on('data', (d) => { body += d })
+    req.on('end', () => resolve(body))
+    req.on('error', e => reject(e))
+  })
+}
