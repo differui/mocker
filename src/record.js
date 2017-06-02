@@ -7,7 +7,7 @@ import * as util from './util'
 
 const records = {}
 
-export async function proxy(proxyRes, req) {
+export async function proxy(proxyRes, req, res) {
   const recordRoot = cfg.get('record').root
 
   if (recordRoot) {
@@ -20,7 +20,7 @@ export async function proxy(proxyRes, req) {
       records[urlObj.pathname] = `./${pathname}.json`
       ensureFileSync(jsonPath)
       writeJsonSync(jsonPath, JSON.parse(jsonData), { spaces: 2 })
-      log.record(jsonPath)
+      log.record(jsonPath, req, res)
     } catch (e) {
       log.error(e, req)
     }

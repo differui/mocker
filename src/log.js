@@ -15,8 +15,8 @@ export function proxy(req, res) {
   logRequest(yellow(' Proxy'), req)
 }
 
-export function record(jsonPath) {
-  console.log(`${bold(cyan('Record'))} ${jsonPath}`)
+export function record(jsonPath, req, res) {
+  console.log(`${bold(cyan('Record'))} ${res.statusCode} ${jsonPath}`)
 }
 
 export function error(e, req) {
