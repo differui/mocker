@@ -29,8 +29,7 @@
     "connect": "^3.6.2",
     "http-proxy": "^1.16.2",
     "memory-cache": "^0.1.6",
-    "meow": "^3.7.0",
-    "mockjs": "^1.0.1-beta3"
+    "meow": "^3.7.0"
   },
   "devDependencies": {
     "ava": "^0.19.1",
