@@ -1,5 +1,4 @@
 import cache from 'memory-cache'
-import { green } from 'colors'
 import { resolve as pathResolve } from 'path'
 import { mock as render } from 'mockjs'
 import * as util from './util'

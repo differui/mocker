@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { green, gray, yellow, red, white, bold, } from 'colors'
+import { green, gray, yellow, red, white, bold } from 'colors'
 import boxen from 'boxen'
 import * as cfg from './config'
 
@@ -27,7 +27,7 @@ export function proxy(req, res) {
   }
 }
 
-export function error(e, req, res) {
+export function error(e, req) {
   console.log(`    ${bold(red(e.message))} ${resolve('/', req.url)}`)
 }
 
@@ -39,10 +39,10 @@ export function summary(config) {
 
   message += green('Mocking!\n')
   message += '\n'
-  message += bold('- Local:   ') + `http://localhost:${port}\n`
-  message += bold('- Porxy:   ') + `${target}\n`
-  message += bold('- Config:  ') + `${config || red('OFF')}\n`
-  message += bold('- Verbose: ') + `${verbose ? green('ON') : red('OFF')}`
+  message += `${bold('- Local:   ')}http://localhost:${port}\n`
+  message += `${bold('- Porxy:   ')}${target}\n`
+  message += `${bold('- Config:  ')}${config || red('OFF')}\n`
+  message += `${bold('- Verbose: ')}${verbose ? green('ON') : red('OFF')}`
 
   console.log(boxen(message, {
     padding: 1,

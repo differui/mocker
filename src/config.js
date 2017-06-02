@@ -1,8 +1,6 @@
-import pkg from '../package.json'
-
 const defaultConfig = {
   close_switch_name: '__response_closed',
-  config_file_name: `mock.config.js`,
+  config_file_name: 'mock.config.js',
   verbose: false,
   port: 5000,
   proxy: {},

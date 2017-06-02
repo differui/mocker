@@ -20,7 +20,7 @@ export function createMockProxyServer() {
   }
 
   return createProxyServer(proxyCfg)
-    .on('proxyReq', (proxyReq, req, res) => {
+    .on('proxyReq', (proxyReq, req) => {
       if (req.body) {
         const bodyData = JSON.stringify(req.body)
 
@@ -93,7 +93,7 @@ function run() {
   if (config) {
     try {
       const configFile = require(resolvePath('.', config))
-      Object.keys(configFile).forEach((key) => cfg.put(key, configFile[key]))
+      Object.keys(configFile).forEach(key => cfg.put(key, configFile[key]))
     } catch (e) {
       throw new Error(`Can not load config file ${config}`)
     }
