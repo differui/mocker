@@ -2231,7 +2231,7 @@ var index$1 = {
 
 var name = "node-http-mock";
 var bin_name = "mock";
-var version = "0.4.11";
+var version = "0.5.0";
 var description = "A HTTP mock server for node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "./node_modules/.bin/rollup -c && echo '#!/usr/bin/env node' > ./bin/mock.js && cat ./dest/bundle.js >> ./bin/mock.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "test": "./node_modules/ava" };
@@ -2727,7 +2727,7 @@ function run() {
   }
   if (record$$1) {
     opts.record = opts.record || {};
-    opts.record.root = path.resolve(__dirname, get$1('record_dir_name'));
+    opts.record.root = path.resolve(process.cwd(), get$1('record_dir_name'));
   }
   if (opts.proxy && opts.proxy.target && opts.proxy.target.indexOf('http://') !== 0) {
     opts.proxy.target = 'http://' + opts.proxy.target;
