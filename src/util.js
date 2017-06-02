@@ -1,15 +1,5 @@
-import cfg from './config.json'
+import * as cfg from './config'
 import pkg from '../package.json'
-
-export function parseBody(req) {
-  let body = ''
-
-  return new Promise((resolve, reject) => {
-    req.on('data', (d) => { body += d })
-    req.on('end', () => resolve(body))
-    req.on('error', e => reject(e))
-  })
-}
 
 export function writeResponseSucceed(req, res, data) {
   res.writeHead(200, {
@@ -20,7 +10,7 @@ export function writeResponseSucceed(req, res, data) {
     succeeded: true,
     data,
   }, null, 2))
-  res[cfg.close_switch_name] = true
+  res[cfg.get('close_switch_name')] = true
 }
 
 export function writeResponseFailed(req, res, message) {
@@ -32,5 +22,5 @@ export function writeResponseFailed(req, res, message) {
     succeeded: false,
     message,
   }, null, 2))
-  res[cfg.close_switch_name] = true
+  res[cfg.get('close_switch_name')] = true
 }

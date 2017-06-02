@@ -11,6 +11,7 @@ export function mock(req, res) {
     const tpl = cache.get(url)
 
     if (tpl) {
+      log.mock(req)
       util.writeResponseSucceed(req, res, render(tpl))
       log.mock(req, res)
     }
@@ -21,7 +22,12 @@ export function mock(req, res) {
 
 export function createOrUpdateTpl(url, tpl) {
   try {
-    cache.put(url, JSON.parse(tpl))
+    let theTpl = tpl
+
+    if (typeof theTpl !== 'string') {
+      theTpl = JSON.stringify(theTpl)
+    }
+    cache.put(url, JSON.parse(theTpl))
   } catch (e) {
     throw new Error(`Can not create or update template: ${url}`)
   }
@@ -42,8 +48,13 @@ export function getTpls() {
 }
 
 export function overrideTpls(tpls) {
-  const t = JSON.parse(tpls)
+  let theTpls = tpls
+
+  if (typeof theTpls !== 'string') {
+    theTpls = JSON.stringify(theTpls)
+  }
 
   cache.clear()
-  Object.keys(JSON.parse(tpls)).forEach(url => createOrUpdateTpl(url, JSON.stringify(t[url])))
+  theTpls = JSON.parse(theTpls)
+  Object.keys(theTpls).forEach(url => createOrUpdateTpl(url, theTpls[url]))
 }

@@ -2,10 +2,9 @@ import { resolve } from 'path'
 import * as mock from './mock'
 import * as util from './util'
 
-export async function api(req, res) {
+export default function api(req, res) {
   const url = resolve('/', req.url)
   const method = req.method
-  const body = await util.parseBody(req)
 
   if (method === 'GET' && (url === '/' || url === '/templates')) {
     util.writeResponseSucceed(req, res, mock.getTpls())
@@ -17,7 +16,7 @@ export async function api(req, res) {
     util.writeResponseSucceed(req, res, mock.getTpls())
   } else if (method === 'PUT' && url === '/templates/upload') {
     try {
-      mock.overrideTpls(body)
+      mock.overrideTpls(req.body)
       util.writeResponseSucceed(req, res, mock.getTpls())
     } catch (e) {
       util.writeResponseFailed(req, res, e.message)
@@ -28,7 +27,7 @@ export async function api(req, res) {
     switch (method) {
       case 'PUT':
         try {
-          mock.createOrUpdateTpl(u, body)
+          mock.createOrUpdateTpl(u, req.body)
           util.writeResponseSucceed(req, res, {
             [u]: mock.getTpls()[u],
           })

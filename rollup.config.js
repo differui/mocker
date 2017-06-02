@@ -11,6 +11,10 @@ export default {
   format: 'cjs',
   external: [
     'http',
+    'boxen',
+    'meow',
+    'connect',
+    'body-parser',
     'path',
     'https',
     'url',
