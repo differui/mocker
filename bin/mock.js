@@ -2250,7 +2250,7 @@ function put$1(key, value) {
 
 var name = "node-http-mock";
 var bin_name = "mock";
-var version = "0.4.6";
+var version = "0.4.7";
 var description = "A HTTP mock server for node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "./node_modules/.bin/rollup -c && echo '#!/usr/bin/env node' > ./bin/mock.js && cat ./dest/bundle.js >> ./bin/mock.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "test": "./node_modules/ava" };
@@ -2449,7 +2449,7 @@ function api(req, res) {
   }
 }
 
-var cli = meow('\n    Usage\n      $ ' + pkg.bin_name + ' --config\n      $ ' + pkg.bin_name + ' --target \'http://my-api-server.com:8888\'\n\n    Options\n      -c, --config  Use config file\n      -t, --target  Proxy target url\n      -p, --port    Port number for mock server\n      -v, --verbose Redirect HTTP streams to stdout\n', {
+var cli = meow('\n    Usage\n      $ ' + pkg.bin_name + ' --config\n      $ ' + pkg.bin_name + ' --target [api server host]\n\n    Options\n      -c, --config  Use config file\n      -t, --target  Proxy target url\n      -p, --port    Port number for mock server\n      -v, --verbose Redirect HTTP streams to stdout\n', {
   boolean: ['verbose'],
   string: ['config', 'target'],
   number: ['port'],
@@ -2605,6 +2605,8 @@ function run() {
   if (opts.proxy && opts.proxy.target) {
     createMockServer(opts);
     summary(config);
+  } else {
+    console.log(cli.help);
   }
 }
 
