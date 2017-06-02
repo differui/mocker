@@ -29,7 +29,7 @@ You can use config file instead of command line options:
 
 ```js
 module.exports = {
-  port: 9999,
+  port: 5000,
   verbose: true,
   proxy: {
     target: 'api host',
