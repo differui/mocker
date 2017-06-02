@@ -2228,29 +2228,9 @@ var index$1 = {
 	keys: keys$3
 };
 
-var defaultConfig = {
-  close_switch_name: '__response_closed',
-  config_file_name: 'mock.config.js',
-  verbose: false,
-  port: 5000,
-  proxy: {},
-  mock: {}
-};
-var runtimeConfig = {};
-
-function get$1(key) {
-  return _Object$assign({}, defaultConfig, runtimeConfig)[key] || null;
-}
-
-function put$1(key, value) {
-  if (Object.hasOwnProperty.call(defaultConfig, key)) {
-    runtimeConfig[key] = value;
-  }
-}
-
 var name = "node-http-mock";
 var bin_name = "mock";
-var version = "0.4.9";
+var version = "0.4.10";
 var description = "A HTTP mock server for node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "./node_modules/.bin/rollup -c && echo '#!/usr/bin/env node' > ./bin/mock.js && cat ./dest/bundle.js >> ./bin/mock.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "test": "./node_modules/ava" };
@@ -2277,28 +2257,24 @@ var pkg = {
 	devDependencies: devDependencies
 };
 
-function writeResponseSucceed(req, res, data) {
-  res.writeHead(200, {
-    'Content-Type': 'application/json',
-    'X-Proxy-By': 'mocker/' + pkg.version
-  });
-  res.end(_JSON$stringify({
-    succeeded: true,
-    data: data
-  }, null, 2));
-  res[get$1('close_switch_name')] = true;
+var defaultConfig = {
+  close_switch_name: '__response_closed',
+  config_file_name: 'mock.config.js',
+  verbose: false,
+  port: 5000,
+  proxy: {},
+  mock: {}
+};
+var runtimeConfig = {};
+
+function get$1(key) {
+  return _Object$assign({}, defaultConfig, runtimeConfig)[key] || null;
 }
 
-function writeResponseFailed(req, res, message) {
-  res.writeHead(400, {
-    'Content-Type': 'application/json',
-    'X-Proxy-By': 'mocker/' + pkg.version
-  });
-  res.end(_JSON$stringify({
-    succeeded: false,
-    message: message
-  }, null, 2));
-  res[get$1('close_switch_name')] = true;
+function put$1(key, value) {
+  if (Object.hasOwnProperty.call(defaultConfig, key)) {
+    runtimeConfig[key] = value;
+  }
 }
 
 function logRequest(type, req) {
@@ -2356,7 +2332,12 @@ function mock$1(req, res) {
 
     if (tpl) {
       mock$2(req);
-      writeResponseSucceed(req, res, mockjs.mock(tpl));
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'X-Proxy-By': 'mocker/' + pkg.version
+      });
+      res.end(_JSON$stringify(mockjs.mock(tpl)));
+      res[get$1('close_switch_name')] = true;
       mock$2(req, res);
     }
 
@@ -2403,6 +2384,28 @@ function overrideTpls(tpls) {
   _Object$keys(theTpls).forEach(function (url) {
     return createOrUpdateTpl(url, theTpls[url]);
   });
+}
+
+function writeResponseSucceed(req, res, data) {
+  res.writeHead(200, {
+    'Content-Type': 'application/json'
+  });
+  res.end(_JSON$stringify({
+    succeeded: true,
+    data: data
+  }, null, 2));
+  res[get$1('close_switch_name')] = true;
+}
+
+function writeResponseFailed(req, res, message) {
+  res.writeHead(400, {
+    'Content-Type': 'application/json'
+  });
+  res.end(_JSON$stringify({
+    succeeded: false,
+    message: message
+  }, null, 2));
+  res[get$1('close_switch_name')] = true;
 }
 
 function api(req, res) {
