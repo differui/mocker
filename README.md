@@ -1,52 +1,46 @@
 # node-http-mock
 > A HTTP mock server for node.js
 
-## Setup
+## Usage
+
+Install it:
 
 ```js
-# install deps
-npm install
-
-# build app
-npm run build
-
-# build & launch app
-npm run start
-
-# run unit test
-npm run test
+npm install node-http-mock -g
 ```
 
-## Quick Start
+And run this command in your termial:
+
+```bash
+node-http-mock -t [api host] -p [local port] -c [config file]
+```
+
+### Options
+
+Run this command to see a list of all available options:
+
+```bash
+node-http-mock --help
+```
+
+### Config
+
+You can use config file instead of command line options:
 
 ```js
-import { createMockServer } from 'node-http-mock'
-
-const server = createMockServer({
+module.exports = {
+  port: 9999,
+  verbose: true,
   proxy: {
-    target: 'your api host',
+    target: 'api host',
     changeOrigin: true,
   },
   mock: {
-    '/path/to/api': {
-      "string|1-10": "★",
-    },
+    '/path/to/to/api/1': {},
+    '/path/to/to/api/2': {},
   },
-})
-
-server.listen(5000)
-console.log('Mock server is listening 5000')
+}
 ```
-
-## Options
-
-**`proxy`**
-
-Proxy settings for [`http-proxy`](https://github.com/nodejitsu/node-http-proxy).
-
-**`mock`**
-
-Mock templates for [`mockjs`](http://mockjs.com/).
 
 ## License
 
