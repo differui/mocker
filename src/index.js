@@ -106,7 +106,7 @@ function run() {
     opts.port = port
   }
 
-  if (opts.proxy && opts.proxy.target) {
+  if ((opts.proxy && opts.proxy.target) || config) {
     createMockServer(opts)
     log.summary(config)
   } else {

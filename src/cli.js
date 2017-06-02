@@ -11,7 +11,7 @@ export default meow(`
       -t, --target  Proxy target url
       -p, --port    Port number for mock server
       -v, --verbose Redirect HTTP streams to stdout
-
+      \n
 `, {
   boolean: [
     'verbose',
