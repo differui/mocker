@@ -2228,7 +2228,7 @@ var index$1 = {
 };
 
 var name = "node-http-mock";
-var version = "0.3.1";
+var version = "0.4.1";
 var description = "A HTTP mock server for node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "./node_modules/.bin/rollup -c", "prestart": "npm run build", "start": "node ./dest/bundle.js", "test": "./node_modules/ava" };
@@ -2442,7 +2442,7 @@ function api(req, res) {
   }
 }
 
-var cli = meow('\n    Usage\n      $ ' + pkg.name + ' --config\n      $ ' + pkg.name + ' --target \'http://my-api-server.com:8888\'\n\n    Options\n      -c, --config  Use config file\n      -t, --target  Proxy target url\n      -p, --port    Port number for mock server\n      -V, --verbose Redirect HTTP streams to stdout\n', {
+var cli = meow('\n    Usage\n      $ ' + pkg.name + ' --config\n      $ ' + pkg.name + ' --target \'http://my-api-server.com:8888\'\n\n    Options\n      -c, --config  Use config file\n      -t, --target  Proxy target url\n      -p, --port    Port number for mock server\n      -v, --verbose Redirect HTTP streams to stdout\n', {
   boolean: ['verbose'],
   string: ['config', 'target'],
   number: ['port'],
