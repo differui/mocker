@@ -9,11 +9,12 @@ var connect = _interopDefault(require('connect'));
 var path = require('path');
 var bodyParser = require('body-parser');
 var http = require('http');
-var httpProxy = require('http-proxy');
-var mockjs = require('mockjs');
 var colors = require('colors');
 var boxen = _interopDefault(require('boxen'));
 var meow = _interopDefault(require('meow'));
+var httpProxy = require('http-proxy');
+var fsExtra = require('fs-extra');
+var url = require('url');
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -26,6 +27,354 @@ function unwrapExports (x) {
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
+
+var _global = createCommonjsModule(function (module) {
+// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+var global = module.exports = typeof window != 'undefined' && window.Math == Math
+  ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
+if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
+});
+
+var _core = createCommonjsModule(function (module) {
+var core = module.exports = {version: '2.4.0'};
+if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
+});
+
+var _aFunction = function(it){
+  if(typeof it != 'function')throw TypeError(it + ' is not a function!');
+  return it;
+};
+
+// optional / simple context binding
+
+var _ctx = function(fn, that, length){
+  _aFunction(fn);
+  if(that === undefined)return fn;
+  switch(length){
+    case 1: return function(a){
+      return fn.call(that, a);
+    };
+    case 2: return function(a, b){
+      return fn.call(that, a, b);
+    };
+    case 3: return function(a, b, c){
+      return fn.call(that, a, b, c);
+    };
+  }
+  return function(/* ...args */){
+    return fn.apply(that, arguments);
+  };
+};
+
+var _isObject = function(it){
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+var _anObject = function(it){
+  if(!_isObject(it))throw TypeError(it + ' is not an object!');
+  return it;
+};
+
+var _fails = function(exec){
+  try {
+    return !!exec();
+  } catch(e){
+    return true;
+  }
+};
+
+// Thank's IE8 for his funny defineProperty
+var _descriptors = !_fails(function(){
+  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
+});
+
+var document$1 = _global.document;
+var is = _isObject(document$1) && _isObject(document$1.createElement);
+var _domCreate = function(it){
+  return is ? document$1.createElement(it) : {};
+};
+
+var _ie8DomDefine = !_descriptors && !_fails(function(){
+  return Object.defineProperty(_domCreate('div'), 'a', {get: function(){ return 7; }}).a != 7;
+});
+
+// 7.1.1 ToPrimitive(input [, PreferredType])
+
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
+var _toPrimitive = function(it, S){
+  if(!_isObject(it))return it;
+  var fn, val;
+  if(S && typeof (fn = it.toString) == 'function' && !_isObject(val = fn.call(it)))return val;
+  if(typeof (fn = it.valueOf) == 'function' && !_isObject(val = fn.call(it)))return val;
+  if(!S && typeof (fn = it.toString) == 'function' && !_isObject(val = fn.call(it)))return val;
+  throw TypeError("Can't convert object to primitive value");
+};
+
+var dP             = Object.defineProperty;
+
+var f = _descriptors ? Object.defineProperty : function defineProperty(O, P, Attributes){
+  _anObject(O);
+  P = _toPrimitive(P, true);
+  _anObject(Attributes);
+  if(_ie8DomDefine)try {
+    return dP(O, P, Attributes);
+  } catch(e){ /* empty */ }
+  if('get' in Attributes || 'set' in Attributes)throw TypeError('Accessors not supported!');
+  if('value' in Attributes)O[P] = Attributes.value;
+  return O;
+};
+
+var _objectDp = {
+	f: f
+};
+
+var _propertyDesc = function(bitmap, value){
+  return {
+    enumerable  : !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable    : !(bitmap & 4),
+    value       : value
+  };
+};
+
+var _hide = _descriptors ? function(object, key, value){
+  return _objectDp.f(object, key, _propertyDesc(1, value));
+} : function(object, key, value){
+  object[key] = value;
+  return object;
+};
+
+var PROTOTYPE = 'prototype';
+
+var $export = function(type, name, source){
+  var IS_FORCED = type & $export.F
+    , IS_GLOBAL = type & $export.G
+    , IS_STATIC = type & $export.S
+    , IS_PROTO  = type & $export.P
+    , IS_BIND   = type & $export.B
+    , IS_WRAP   = type & $export.W
+    , exports   = IS_GLOBAL ? _core : _core[name] || (_core[name] = {})
+    , expProto  = exports[PROTOTYPE]
+    , target    = IS_GLOBAL ? _global : IS_STATIC ? _global[name] : (_global[name] || {})[PROTOTYPE]
+    , key, own, out;
+  if(IS_GLOBAL)source = name;
+  for(key in source){
+    // contains in native
+    own = !IS_FORCED && target && target[key] !== undefined;
+    if(own && key in exports)continue;
+    // export native or passed
+    out = own ? target[key] : source[key];
+    // prevent global pollution for namespaces
+    exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key]
+    // bind timers to global for call from export context
+    : IS_BIND && own ? _ctx(out, _global)
+    // wrap global constructors for prevent change them in library
+    : IS_WRAP && target[key] == out ? (function(C){
+      var F = function(a, b, c){
+        if(this instanceof C){
+          switch(arguments.length){
+            case 0: return new C;
+            case 1: return new C(a);
+            case 2: return new C(a, b);
+          } return new C(a, b, c);
+        } return C.apply(this, arguments);
+      };
+      F[PROTOTYPE] = C[PROTOTYPE];
+      return F;
+    // make static versions for prototype methods
+    })(out) : IS_PROTO && typeof out == 'function' ? _ctx(Function.call, out) : out;
+    // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
+    if(IS_PROTO){
+      (exports.virtual || (exports.virtual = {}))[key] = out;
+      // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
+      if(type & $export.R && expProto && !expProto[key])_hide(expProto, key, out);
+    }
+  }
+};
+// type bitmap
+$export.F = 1;   // forced
+$export.G = 2;   // global
+$export.S = 4;   // static
+$export.P = 8;   // proto
+$export.B = 16;  // bind
+$export.W = 32;  // wrap
+$export.U = 64;  // safe
+$export.R = 128; // real proto method for `library` 
+var _export = $export;
+
+var hasOwnProperty = {}.hasOwnProperty;
+var _has = function(it, key){
+  return hasOwnProperty.call(it, key);
+};
+
+var toString = {}.toString;
+
+var _cof = function(it){
+  return toString.call(it).slice(8, -1);
+};
+
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
+
+var _iobject = Object('z').propertyIsEnumerable(0) ? Object : function(it){
+  return _cof(it) == 'String' ? it.split('') : Object(it);
+};
+
+// 7.2.1 RequireObjectCoercible(argument)
+var _defined = function(it){
+  if(it == undefined)throw TypeError("Can't call method on  " + it);
+  return it;
+};
+
+// to indexed object, toObject with fallback for non-array-like ES3 strings
+
+var _toIobject = function(it){
+  return _iobject(_defined(it));
+};
+
+// 7.1.4 ToInteger
+var ceil  = Math.ceil;
+var floor = Math.floor;
+var _toInteger = function(it){
+  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
+};
+
+// 7.1.15 ToLength
+var min       = Math.min;
+var _toLength = function(it){
+  return it > 0 ? min(_toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
+};
+
+var max       = Math.max;
+var min$1       = Math.min;
+var _toIndex = function(index, length){
+  index = _toInteger(index);
+  return index < 0 ? max(index + length, 0) : min$1(index, length);
+};
+
+// false -> Array#indexOf
+// true  -> Array#includes
+
+var _arrayIncludes = function(IS_INCLUDES){
+  return function($this, el, fromIndex){
+    var O      = _toIobject($this)
+      , length = _toLength(O.length)
+      , index  = _toIndex(fromIndex, length)
+      , value;
+    // Array#includes uses SameValueZero equality algorithm
+    if(IS_INCLUDES && el != el)while(length > index){
+      value = O[index++];
+      if(value != value)return true;
+    // Array#toIndex ignores holes, Array#includes - not
+    } else for(;length > index; index++)if(IS_INCLUDES || index in O){
+      if(O[index] === el)return IS_INCLUDES || index || 0;
+    } return !IS_INCLUDES && -1;
+  };
+};
+
+var SHARED = '__core-js_shared__';
+var store  = _global[SHARED] || (_global[SHARED] = {});
+var _shared = function(key){
+  return store[key] || (store[key] = {});
+};
+
+var id = 0;
+var px = Math.random();
+var _uid = function(key){
+  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
+};
+
+var shared = _shared('keys');
+var _sharedKey = function(key){
+  return shared[key] || (shared[key] = _uid(key));
+};
+
+var arrayIndexOf = _arrayIncludes(false);
+var IE_PROTO     = _sharedKey('IE_PROTO');
+
+var _objectKeysInternal = function(object, names){
+  var O      = _toIobject(object)
+    , i      = 0
+    , result = []
+    , key;
+  for(key in O)if(key != IE_PROTO)_has(O, key) && result.push(key);
+  // Don't enum bug & hidden keys
+  while(names.length > i)if(_has(O, key = names[i++])){
+    ~arrayIndexOf(result, key) || result.push(key);
+  }
+  return result;
+};
+
+// IE 8- don't enum bug keys
+var _enumBugKeys = (
+  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
+).split(',');
+
+// 19.1.2.14 / 15.2.3.14 Object.keys(O)
+
+
+var _objectKeys = Object.keys || function keys(O){
+  return _objectKeysInternal(O, _enumBugKeys);
+};
+
+var f$1 = Object.getOwnPropertySymbols;
+
+var _objectGops = {
+	f: f$1
+};
+
+var f$2 = {}.propertyIsEnumerable;
+
+var _objectPie = {
+	f: f$2
+};
+
+// 7.1.13 ToObject(argument)
+
+var _toObject = function(it){
+  return Object(_defined(it));
+};
+
+// 19.1.2.1 Object.assign(target, source, ...)
+var $assign  = Object.assign;
+
+// should work with symbols and should have deterministic property order (V8 bug)
+var _objectAssign = !$assign || _fails(function(){
+  var A = {}
+    , B = {}
+    , S = Symbol()
+    , K = 'abcdefghijklmnopqrst';
+  A[S] = 7;
+  K.split('').forEach(function(k){ B[k] = k; });
+  return $assign({}, A)[S] != 7 || Object.keys($assign({}, B)).join('') != K;
+}) ? function assign(target, source){ // eslint-disable-line no-unused-vars
+  var T     = _toObject(target)
+    , aLen  = arguments.length
+    , index = 1
+    , getSymbols = _objectGops.f
+    , isEnum     = _objectPie.f;
+  while(aLen > index){
+    var S      = _iobject(arguments[index++])
+      , keys   = getSymbols ? _objectKeys(S).concat(getSymbols(S)) : _objectKeys(S)
+      , length = keys.length
+      , j      = 0
+      , key;
+    while(length > j)if(isEnum.call(S, key = keys[j++]))T[key] = S[key];
+  } return T;
+} : $assign;
+
+// 19.1.3.1 Object.assign(target, source)
+
+
+_export(_export.S + _export.F, 'Object', {assign: _objectAssign});
+
+var assign$1 = _core.Object.assign;
+
+var assign = createCommonjsModule(function (module) {
+module.exports = { "default": assign$1, __esModule: true };
+});
+
+var _Object$assign = unwrapExports(assign);
 
 var runtime = createCommonjsModule(function (module) {
 /**
@@ -800,19 +1149,6 @@ if (hadRuntime) {
 
 var index = runtimeModule;
 
-// 7.1.4 ToInteger
-var ceil  = Math.ceil;
-var floor = Math.floor;
-var _toInteger = function(it){
-  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
-};
-
-// 7.2.1 RequireObjectCoercible(argument)
-var _defined = function(it){
-  if(it == undefined)throw TypeError("Can't call method on  " + it);
-  return it;
-};
-
 // true  -> String#at
 // false -> String#codePointAt
 var _stringAt = function(TO_STRING){
@@ -831,285 +1167,9 @@ var _stringAt = function(TO_STRING){
 
 var _library = true;
 
-var _global = createCommonjsModule(function (module) {
-// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
-var global = module.exports = typeof window != 'undefined' && window.Math == Math
-  ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
-if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
-});
-
-var _core = createCommonjsModule(function (module) {
-var core = module.exports = {version: '2.4.0'};
-if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
-});
-
-var _aFunction = function(it){
-  if(typeof it != 'function')throw TypeError(it + ' is not a function!');
-  return it;
-};
-
-// optional / simple context binding
-
-var _ctx = function(fn, that, length){
-  _aFunction(fn);
-  if(that === undefined)return fn;
-  switch(length){
-    case 1: return function(a){
-      return fn.call(that, a);
-    };
-    case 2: return function(a, b){
-      return fn.call(that, a, b);
-    };
-    case 3: return function(a, b, c){
-      return fn.call(that, a, b, c);
-    };
-  }
-  return function(/* ...args */){
-    return fn.apply(that, arguments);
-  };
-};
-
-var _isObject = function(it){
-  return typeof it === 'object' ? it !== null : typeof it === 'function';
-};
-
-var _anObject = function(it){
-  if(!_isObject(it))throw TypeError(it + ' is not an object!');
-  return it;
-};
-
-var _fails = function(exec){
-  try {
-    return !!exec();
-  } catch(e){
-    return true;
-  }
-};
-
-// Thank's IE8 for his funny defineProperty
-var _descriptors = !_fails(function(){
-  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
-});
-
-var document$1 = _global.document;
-var is = _isObject(document$1) && _isObject(document$1.createElement);
-var _domCreate = function(it){
-  return is ? document$1.createElement(it) : {};
-};
-
-var _ie8DomDefine = !_descriptors && !_fails(function(){
-  return Object.defineProperty(_domCreate('div'), 'a', {get: function(){ return 7; }}).a != 7;
-});
-
-// 7.1.1 ToPrimitive(input [, PreferredType])
-
-// instead of the ES6 spec version, we didn't implement @@toPrimitive case
-// and the second argument - flag - preferred type is a string
-var _toPrimitive = function(it, S){
-  if(!_isObject(it))return it;
-  var fn, val;
-  if(S && typeof (fn = it.toString) == 'function' && !_isObject(val = fn.call(it)))return val;
-  if(typeof (fn = it.valueOf) == 'function' && !_isObject(val = fn.call(it)))return val;
-  if(!S && typeof (fn = it.toString) == 'function' && !_isObject(val = fn.call(it)))return val;
-  throw TypeError("Can't convert object to primitive value");
-};
-
-var dP             = Object.defineProperty;
-
-var f = _descriptors ? Object.defineProperty : function defineProperty(O, P, Attributes){
-  _anObject(O);
-  P = _toPrimitive(P, true);
-  _anObject(Attributes);
-  if(_ie8DomDefine)try {
-    return dP(O, P, Attributes);
-  } catch(e){ /* empty */ }
-  if('get' in Attributes || 'set' in Attributes)throw TypeError('Accessors not supported!');
-  if('value' in Attributes)O[P] = Attributes.value;
-  return O;
-};
-
-var _objectDp = {
-	f: f
-};
-
-var _propertyDesc = function(bitmap, value){
-  return {
-    enumerable  : !(bitmap & 1),
-    configurable: !(bitmap & 2),
-    writable    : !(bitmap & 4),
-    value       : value
-  };
-};
-
-var _hide = _descriptors ? function(object, key, value){
-  return _objectDp.f(object, key, _propertyDesc(1, value));
-} : function(object, key, value){
-  object[key] = value;
-  return object;
-};
-
-var PROTOTYPE = 'prototype';
-
-var $export = function(type, name, source){
-  var IS_FORCED = type & $export.F
-    , IS_GLOBAL = type & $export.G
-    , IS_STATIC = type & $export.S
-    , IS_PROTO  = type & $export.P
-    , IS_BIND   = type & $export.B
-    , IS_WRAP   = type & $export.W
-    , exports   = IS_GLOBAL ? _core : _core[name] || (_core[name] = {})
-    , expProto  = exports[PROTOTYPE]
-    , target    = IS_GLOBAL ? _global : IS_STATIC ? _global[name] : (_global[name] || {})[PROTOTYPE]
-    , key, own, out;
-  if(IS_GLOBAL)source = name;
-  for(key in source){
-    // contains in native
-    own = !IS_FORCED && target && target[key] !== undefined;
-    if(own && key in exports)continue;
-    // export native or passed
-    out = own ? target[key] : source[key];
-    // prevent global pollution for namespaces
-    exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key]
-    // bind timers to global for call from export context
-    : IS_BIND && own ? _ctx(out, _global)
-    // wrap global constructors for prevent change them in library
-    : IS_WRAP && target[key] == out ? (function(C){
-      var F = function(a, b, c){
-        if(this instanceof C){
-          switch(arguments.length){
-            case 0: return new C;
-            case 1: return new C(a);
-            case 2: return new C(a, b);
-          } return new C(a, b, c);
-        } return C.apply(this, arguments);
-      };
-      F[PROTOTYPE] = C[PROTOTYPE];
-      return F;
-    // make static versions for prototype methods
-    })(out) : IS_PROTO && typeof out == 'function' ? _ctx(Function.call, out) : out;
-    // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
-    if(IS_PROTO){
-      (exports.virtual || (exports.virtual = {}))[key] = out;
-      // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
-      if(type & $export.R && expProto && !expProto[key])_hide(expProto, key, out);
-    }
-  }
-};
-// type bitmap
-$export.F = 1;   // forced
-$export.G = 2;   // global
-$export.S = 4;   // static
-$export.P = 8;   // proto
-$export.B = 16;  // bind
-$export.W = 32;  // wrap
-$export.U = 64;  // safe
-$export.R = 128; // real proto method for `library` 
-var _export = $export;
-
 var _redefine = _hide;
 
-var hasOwnProperty = {}.hasOwnProperty;
-var _has = function(it, key){
-  return hasOwnProperty.call(it, key);
-};
-
 var _iterators = {};
-
-var toString = {}.toString;
-
-var _cof = function(it){
-  return toString.call(it).slice(8, -1);
-};
-
-// fallback for non-array-like ES3 and non-enumerable old V8 strings
-
-var _iobject = Object('z').propertyIsEnumerable(0) ? Object : function(it){
-  return _cof(it) == 'String' ? it.split('') : Object(it);
-};
-
-// to indexed object, toObject with fallback for non-array-like ES3 strings
-
-var _toIobject = function(it){
-  return _iobject(_defined(it));
-};
-
-// 7.1.15 ToLength
-var min       = Math.min;
-var _toLength = function(it){
-  return it > 0 ? min(_toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
-};
-
-var max       = Math.max;
-var min$1       = Math.min;
-var _toIndex = function(index, length){
-  index = _toInteger(index);
-  return index < 0 ? max(index + length, 0) : min$1(index, length);
-};
-
-// false -> Array#indexOf
-// true  -> Array#includes
-
-var _arrayIncludes = function(IS_INCLUDES){
-  return function($this, el, fromIndex){
-    var O      = _toIobject($this)
-      , length = _toLength(O.length)
-      , index  = _toIndex(fromIndex, length)
-      , value;
-    // Array#includes uses SameValueZero equality algorithm
-    if(IS_INCLUDES && el != el)while(length > index){
-      value = O[index++];
-      if(value != value)return true;
-    // Array#toIndex ignores holes, Array#includes - not
-    } else for(;length > index; index++)if(IS_INCLUDES || index in O){
-      if(O[index] === el)return IS_INCLUDES || index || 0;
-    } return !IS_INCLUDES && -1;
-  };
-};
-
-var SHARED = '__core-js_shared__';
-var store  = _global[SHARED] || (_global[SHARED] = {});
-var _shared = function(key){
-  return store[key] || (store[key] = {});
-};
-
-var id = 0;
-var px = Math.random();
-var _uid = function(key){
-  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
-};
-
-var shared = _shared('keys');
-var _sharedKey = function(key){
-  return shared[key] || (shared[key] = _uid(key));
-};
-
-var arrayIndexOf = _arrayIncludes(false);
-var IE_PROTO$1     = _sharedKey('IE_PROTO');
-
-var _objectKeysInternal = function(object, names){
-  var O      = _toIobject(object)
-    , i      = 0
-    , result = []
-    , key;
-  for(key in O)if(key != IE_PROTO$1)_has(O, key) && result.push(key);
-  // Don't enum bug & hidden keys
-  while(names.length > i)if(_has(O, key = names[i++])){
-    ~arrayIndexOf(result, key) || result.push(key);
-  }
-  return result;
-};
-
-// IE 8- don't enum bug keys
-var _enumBugKeys = (
-  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
-).split(',');
-
-// 19.1.2.14 / 15.2.3.14 Object.keys(O)
-
-
-var _objectKeys = Object.keys || function keys(O){
-  return _objectKeysInternal(O, _enumBugKeys);
-};
 
 var _objectDps = _descriptors ? Object.defineProperties : function defineProperties(O, Properties){
   _anObject(O);
@@ -1124,7 +1184,7 @@ var _objectDps = _descriptors ? Object.defineProperties : function definePropert
 var _html = _global.document && document.documentElement;
 
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
-var IE_PROTO    = _sharedKey('IE_PROTO');
+var IE_PROTO$1    = _sharedKey('IE_PROTO');
 var Empty       = function(){ /* empty */ };
 var PROTOTYPE$1   = 'prototype';
 
@@ -1157,7 +1217,7 @@ var _objectCreate = Object.create || function create(O, Properties){
     result = new Empty;
     Empty[PROTOTYPE$1] = null;
     // add "__proto__" for Object.getPrototypeOf polyfill
-    result[IE_PROTO] = O;
+    result[IE_PROTO$1] = O;
   } else result = createDict();
   return Properties === undefined ? result : _objectDps(result, Properties);
 };
@@ -1190,12 +1250,6 @@ _hide(IteratorPrototype, _wks('iterator'), function(){ return this; });
 var _iterCreate = function(Constructor, NAME, next){
   Constructor.prototype = _objectCreate(IteratorPrototype, {next: _propertyDesc(1, next)});
   _setToStringTag(Constructor, NAME + ' Iterator');
-};
-
-// 7.1.13 ToObject(argument)
-
-var _toObject = function(it){
-  return Object(_defined(it));
 };
 
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
@@ -1435,7 +1489,7 @@ var _invoke = function(fn, args, that){
   } return              fn.apply(that, args);
 };
 
-var process$1            = _global.process;
+var process$2            = _global.process;
 var setTask            = _global.setImmediate;
 var clearTask          = _global.clearImmediate;
 var MessageChannel     = _global.MessageChannel;
@@ -1471,9 +1525,9 @@ if(!setTask || !clearTask){
     delete queue[id];
   };
   // Node.js 0.8-
-  if(_cof(process$1) == 'process'){
+  if(_cof(process$2) == 'process'){
     defer = function(id){
-      process$1.nextTick(_ctx(run$1, id, 1));
+      process$2.nextTick(_ctx(run$1, id, 1));
     };
   // Browsers with MessageChannel, includes WebWorkers
   } else if(MessageChannel){
@@ -1510,16 +1564,16 @@ var _task = {
 
 var macrotask = _task.set;
 var Observer  = _global.MutationObserver || _global.WebKitMutationObserver;
-var process$2   = _global.process;
+var process$3   = _global.process;
 var Promise$1   = _global.Promise;
-var isNode$1    = _cof(process$2) == 'process';
+var isNode$1    = _cof(process$3) == 'process';
 
 var _microtask = function(){
   var head, last, notify;
 
   var flush = function(){
     var parent, fn;
-    if(isNode$1 && (parent = process$2.domain))parent.exit();
+    if(isNode$1 && (parent = process$3.domain))parent.exit();
     while(head){
       fn   = head.fn;
       head = head.next;
@@ -1537,7 +1591,7 @@ var _microtask = function(){
   // Node.js
   if(isNode$1){
     notify = function(){
-      process$2.nextTick(flush);
+      process$3.nextTick(flush);
     };
   // browsers with MutationObserver
   } else if(Observer){
@@ -1619,10 +1673,10 @@ var task               = _task.set;
 var microtask          = _microtask();
 var PROMISE            = 'Promise';
 var TypeError$1          = _global.TypeError;
-var process            = _global.process;
+var process$1            = _global.process;
 var $Promise           = _global[PROMISE];
-var process            = _global.process;
-var isNode             = _classof(process) == 'process';
+var process$1            = _global.process;
+var isNode             = _classof(process$1) == 'process';
 var empty              = function(){ /* empty */ };
 var Internal;
 var GenericPromiseCapability;
@@ -1718,7 +1772,7 @@ var onUnhandled = function(promise){
     if(isUnhandled(promise)){
       abrupt = perform(function(){
         if(isNode){
-          process.emit('unhandledRejection', value, promise);
+          process$1.emit('unhandledRejection', value, promise);
         } else if(handler = _global.onunhandledrejection){
           handler({promise: promise, reason: value});
         } else if((console = _global.console) && console.error){
@@ -1745,7 +1799,7 @@ var onHandleUnhandled = function(promise){
   task.call(_global, function(){
     var handler;
     if(isNode){
-      process.emit('rejectionHandled', promise);
+      process$1.emit('rejectionHandled', promise);
     } else if(handler = _global.onrejectionhandled){
       handler({promise: promise, reason: promise._v});
     }
@@ -1816,7 +1870,7 @@ if(!USE_NATIVE){
       var reaction    = newPromiseCapability(_speciesConstructor(this, $Promise));
       reaction.ok     = typeof onFulfilled == 'function' ? onFulfilled : true;
       reaction.fail   = typeof onRejected == 'function' && onRejected;
-      reaction.domain = isNode ? process.domain : undefined;
+      reaction.domain = isNode ? process$1.domain : undefined;
       this._c.push(reaction);
       if(this._a)this._a.push(reaction);
       if(this._s)notify(this, false);
@@ -1983,70 +2037,6 @@ module.exports = { "default": keys$1, __esModule: true };
 
 var _Object$keys = unwrapExports(keys);
 
-var $JSON = _core.JSON || (_core.JSON = {stringify: JSON.stringify});
-var stringify$1 = function stringify(it){ // eslint-disable-line no-unused-vars
-  return $JSON.stringify.apply($JSON, arguments);
-};
-
-var stringify = createCommonjsModule(function (module) {
-module.exports = { "default": stringify$1, __esModule: true };
-});
-
-var _JSON$stringify = unwrapExports(stringify);
-
-var f$1 = Object.getOwnPropertySymbols;
-
-var _objectGops = {
-	f: f$1
-};
-
-var f$2 = {}.propertyIsEnumerable;
-
-var _objectPie = {
-	f: f$2
-};
-
-// 19.1.2.1 Object.assign(target, source, ...)
-var $assign  = Object.assign;
-
-// should work with symbols and should have deterministic property order (V8 bug)
-var _objectAssign = !$assign || _fails(function(){
-  var A = {}
-    , B = {}
-    , S = Symbol()
-    , K = 'abcdefghijklmnopqrst';
-  A[S] = 7;
-  K.split('').forEach(function(k){ B[k] = k; });
-  return $assign({}, A)[S] != 7 || Object.keys($assign({}, B)).join('') != K;
-}) ? function assign(target, source){ // eslint-disable-line no-unused-vars
-  var T     = _toObject(target)
-    , aLen  = arguments.length
-    , index = 1
-    , getSymbols = _objectGops.f
-    , isEnum     = _objectPie.f;
-  while(aLen > index){
-    var S      = _iobject(arguments[index++])
-      , keys   = getSymbols ? _objectKeys(S).concat(getSymbols(S)) : _objectKeys(S)
-      , length = keys.length
-      , j      = 0
-      , key;
-    while(length > j)if(isEnum.call(S, key = keys[j++]))T[key] = S[key];
-  } return T;
-} : $assign;
-
-// 19.1.3.1 Object.assign(target, source)
-
-
-_export(_export.S + _export.F, 'Object', {assign: _objectAssign});
-
-var assign$1 = _core.Object.assign;
-
-var assign = createCommonjsModule(function (module) {
-module.exports = { "default": assign$1, __esModule: true };
-});
-
-var _Object$assign = unwrapExports(assign);
-
 // 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
 _export(_export.S + _export.F * !_descriptors, 'Object', {defineProperty: _objectDp.f});
 
@@ -2087,6 +2077,17 @@ exports.default = function (obj, key, value) {
 });
 
 var _defineProperty = unwrapExports(defineProperty);
+
+var $JSON = _core.JSON || (_core.JSON = {stringify: JSON.stringify});
+var stringify$1 = function stringify(it){ // eslint-disable-line no-unused-vars
+  return $JSON.stringify.apply($JSON, arguments);
+};
+
+var stringify = createCommonjsModule(function (module) {
+module.exports = { "default": stringify$1, __esModule: true };
+});
+
+var _JSON$stringify = unwrapExports(stringify);
 
 var cache = Object.create(null);
 var debug = false;
@@ -2230,7 +2231,7 @@ var index$1 = {
 
 var name = "node-http-mock";
 var bin_name = "mock";
-var version = "0.4.10";
+var version = "0.4.11";
 var description = "A HTTP mock server for node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "./node_modules/.bin/rollup -c && echo '#!/usr/bin/env node' > ./bin/mock.js && cat ./dest/bundle.js >> ./bin/mock.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "test": "./node_modules/ava" };
@@ -2239,7 +2240,7 @@ var author = "differui<differui@gmail.com>";
 var bin = { "mock": "bin/mock.js" };
 var files = ["bin"];
 var license = "MIT";
-var dependencies = { "babel-runtime": "^6.23.0", "body-parser": "^1.17.2", "boxen": "^1.1.0", "colors": "^1.1.2", "connect": "^3.6.2", "http-proxy": "^1.16.2", "memory-cache": "^0.1.6", "meow": "^3.7.0", "mockjs": "^1.0.1-beta3" };
+var dependencies = { "babel-runtime": "^6.23.0", "body-parser": "^1.17.2", "boxen": "^1.1.0", "colors": "^1.1.2", "connect": "^3.6.2", "fs-extra": "^3.0.1", "http-proxy": "^1.16.2", "memory-cache": "^0.1.6", "meow": "^3.7.0" };
 var devDependencies = { "ava": "^0.19.1", "babel-plugin-external-helpers": "^6.22.0", "babel-plugin-transform-runtime": "^6.23.0", "babel-preset-env": "^1.4.0", "eslint": "^3.19.0", "eslint-config-airbnb-base": "^11.2.0", "eslint-plugin-import": "^2.3.0", "rollup": "^0.41.6", "rollup-plugin-babel": "^2.7.1", "rollup-plugin-commonjs": "^8.0.2", "rollup-plugin-eslint": "^3.0.0", "rollup-plugin-json": "^2.1.1", "rollup-plugin-node-resolve": "^3.0.0", "rollup-plugin-replace": "^1.1.1", "rollup-watch": "^3.2.2" };
 var pkg = {
 	name: name,
@@ -2260,8 +2261,10 @@ var pkg = {
 var defaultConfig = {
   close_switch_name: '__response_closed',
   config_file_name: 'mock.config.js',
+  record_dir_name: '.mock',
   verbose: false,
   port: 5000,
+  record: {},
   proxy: {},
   mock: {}
 };
@@ -2278,36 +2281,41 @@ function put$1(key, value) {
 }
 
 function logRequest(type, req) {
-  console.log(colors.white(type + ': ' + req.method + ' ' + path.resolve('/', req.url)));
+  console.log(colors.white(type + ' ' + req.method + ' ' + path.resolve('/', req.url)));
 }
 
 function logResponse(type, req, res) {
-  console.log(colors.gray('' + ' '.repeat(type.length + 2) + res.statusCode + ' ' + path.resolve('/', req.url)));
+  console.log(colors.gray('' + ' '.repeat(type.length + 1) + res.statusCode + ' ' + path.resolve('/', req.url)));
 }
 
-function mock$2(req, res) {
+function mock$1(req, res) {
   if (!res) {
-    logRequest(colors.green(' Mock'), req);
+    logRequest(colors.green('  Mock'), req);
   } else {
-    logResponse(' Mock', req, res);
+    logResponse('  Mock', req, res);
   }
 }
 
 function proxy(req, res) {
   if (!res) {
-    logRequest(colors.yellow('Proxy'), req);
+    logRequest(colors.yellow(' Proxy'), req);
   } else {
-    logResponse('Proxy', req, res);
+    logResponse(' Proxy', req, res);
   }
 }
 
+function record(jsonPath) {
+  console.log(colors.bold(colors.cyan('Record')) + ' ' + jsonPath);
+}
+
 function error$1(e, req) {
-  console.log('    ' + colors.bold(colors.red(e.message)) + ' ' + path.resolve('/', req.url));
+  console.log(' ' + colors.bold(colors.red('Error')) + ' ' + e.message + ' ' + path.resolve('/', req.url));
 }
 
 function summary(config) {
   var port = get$1('port');
   var target = get$1('proxy').target;
+  var recordRoot = get$1('record').root;
   var verbose = get$1('verbose');
   var message = '';
 
@@ -2316,6 +2324,7 @@ function summary(config) {
   message += colors.bold('- Local:   ') + 'http://localhost:' + port + '\n';
   message += '' + colors.bold('- Porxy:   ') + target + '\n';
   message += '' + colors.bold('- Config:  ') + (config || colors.red('OFF')) + '\n';
+  message += '' + colors.bold('- Record:  ') + (recordRoot || colors.red('OFF')) + '\n';
   message += '' + colors.bold('- Verbose: ') + (verbose ? colors.green('ON') : colors.red('OFF'));
 
   console.log(boxen(message, {
@@ -2325,50 +2334,50 @@ function summary(config) {
   }));
 }
 
-function mock$1(req, res) {
+function mock$$1(req, res) {
   return new _Promise(function (resolve$$1) {
-    var url = path.resolve('/', req.url);
-    var tpl = index$1.get(url);
+    var url$$1 = path.resolve('/', req.url);
+    var tpl = index$1.get(url$$1);
 
     if (tpl) {
-      mock$2(req);
+      mock$1(req);
       res.writeHead(200, {
         'Content-Type': 'application/json',
         'X-Proxy-By': 'mocker/' + pkg.version
       });
-      res.end(_JSON$stringify(mockjs.mock(tpl)));
+      res.end(_JSON$stringify(tpl));
       res[get$1('close_switch_name')] = true;
-      mock$2(req, res);
+      mock$1(req, res);
     }
 
     resolve$$1();
   });
 }
 
-function createOrUpdateTpl(url, tpl) {
+function createOrUpdateTpl(url$$1, tpl) {
   try {
     var theTpl = tpl;
 
     if (typeof theTpl !== 'string') {
       theTpl = _JSON$stringify(theTpl);
     }
-    index$1.put(url, JSON.parse(theTpl));
+    index$1.put(url$$1, JSON.parse(theTpl));
   } catch (e) {
-    throw new Error('Can not create or update template: ' + url);
+    throw new Error('Can not create or update template: ' + url$$1);
   }
 }
 
-function removeTpl(url) {
-  if (index$1.get(url) !== null) {
-    index$1.del(url);
+function removeTpl(url$$1) {
+  if (index$1.get(url$$1) !== null) {
+    index$1.del(url$$1);
   } else {
-    throw new Error('Can not found template: ' + url);
+    throw new Error('Can not found template: ' + url$$1);
   }
 }
 
 function getTpls() {
-  return index$1.keys().reduce(function (rtn, url) {
-    return _Object$assign(_defineProperty({}, url, index$1.get(url)), rtn);
+  return index$1.keys().reduce(function (rtn, url$$1) {
+    return _Object$assign(_defineProperty({}, url$$1, index$1.get(url$$1)), rtn);
   }, {});
 }
 
@@ -2381,8 +2390,8 @@ function overrideTpls(tpls) {
 
   index$1.clear();
   theTpls = JSON.parse(theTpls);
-  _Object$keys(theTpls).forEach(function (url) {
-    return createOrUpdateTpl(url, theTpls[url]);
+  _Object$keys(theTpls).forEach(function (url$$1) {
+    return createOrUpdateTpl(url$$1, theTpls[url$$1]);
   });
 }
 
@@ -2408,27 +2417,43 @@ function writeResponseFailed(req, res, message) {
   res[get$1('close_switch_name')] = true;
 }
 
+function parseBody(req) {
+  var body = '';
+
+  return new _Promise(function (resolve$$1, reject) {
+    req.on('data', function (d) {
+      body += d;
+    });
+    req.on('end', function () {
+      return resolve$$1(body);
+    });
+    req.on('error', function (e) {
+      return reject(e);
+    });
+  });
+}
+
 function api(req, res) {
-  var url = path.resolve('/', req.url);
+  var url$$1 = path.resolve('/', req.url);
   var method = req.method;
 
-  if (method === 'GET' && (url === '/' || url === '/templates')) {
+  if (method === 'GET' && (url$$1 === '/' || url$$1 === '/templates')) {
     writeResponseSucceed(req, res, getTpls());
-  } else if (method === 'GET' && url === '/templates/download') {
+  } else if (method === 'GET' && url$$1 === '/templates/download') {
     var d = new Date();
     var dateStr = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
 
     res.setHeader('Content-Disposition', 'attachment; filename=mock_' + dateStr);
     writeResponseSucceed(req, res, getTpls());
-  } else if (method === 'PUT' && url === '/templates/upload') {
+  } else if (method === 'PUT' && url$$1 === '/templates/upload') {
     try {
       overrideTpls(req.body);
       writeResponseSucceed(req, res, getTpls());
     } catch (e) {
       writeResponseFailed(req, res, e.message);
     }
-  } else if (url.indexOf('/templates/') === 0) {
-    var u = url.substring('/templates/'.length - 1);
+  } else if (url$$1.indexOf('/templates/') === 0) {
+    var u = url$$1.substring('/templates/'.length - 1);
 
     switch (method) {
       case 'PUT':
@@ -2452,17 +2477,126 @@ function api(req, res) {
   }
 }
 
-var cli = meow('\n    Usage\n      $ ' + pkg.bin_name + ' --config\n      $ ' + pkg.bin_name + ' --target [api server host]\n\n    Options\n      -c, --config  Use config file\n      -t, --target  Proxy target url\n      -p, --port    Port number for mock server\n      -v, --verbose Redirect HTTP streams to stdout\n      \n\n', {
-  boolean: ['verbose'],
-  string: ['config', 'target'],
+var cli = meow('\n    Usage\n      $ ' + pkg.bin_name + ' --config\n      $ ' + pkg.bin_name + ' --target [api server host]\n\n    Options\n      -c, --config  Use config file\n      -r, --reocrd  Record HTTP response to current directory\n      -t, --target  Proxy target url\n      -h, --host    Mock server host name\n      -p, --port    Mock server port number\n      -v, --verbose Redirect HTTP streams to stdout\n      \n\n', {
+  boolean: ['verbose', 'record'],
+  string: ['config', 'target', 'host'],
   number: ['port'],
   alias: {
     c: 'config',
     t: 'target',
     p: 'port',
-    v: 'verbose'
+    h: 'host',
+    v: 'verbose',
+    r: 'record'
   }
 });
+
+var records = {};
+
+var proxy$2 = function () {
+  var _ref = _asyncToGenerator(index.mark(function _callee(proxyRes, req) {
+    var recordRoot, urlObj, pathname, jsonPath, jsonData;
+    return index.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            recordRoot = get$1('record').root;
+
+            if (!recordRoot) {
+              _context.next = 9;
+              break;
+            }
+
+            urlObj = url.parse(req.url);
+            pathname = urlObj.pathname.indexOf('/') === 0 ? urlObj.pathname.substring(1) : urlObj.pathname;
+            jsonPath = path.resolve(recordRoot, pathname + '.json');
+            _context.next = 7;
+            return parseBody(proxyRes);
+
+          case 7:
+            jsonData = _context.sent;
+
+
+            try {
+              records[urlObj.pathname] = './' + pathname + '.json';
+              fsExtra.ensureFileSync(jsonPath);
+              fsExtra.writeJsonSync(jsonPath, JSON.parse(jsonData), { spaces: 2 });
+              record(jsonPath);
+            } catch (e) {
+              error$1(e, req);
+            }
+
+          case 9:
+          case 'end':
+            return _context.stop();
+        }
+      }
+    }, _callee, this);
+  }));
+
+  return function proxy$$1(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+process.on('SIGINT', function () {
+  var recordRoot = get$1('record').root;
+
+  if (recordRoot) {
+    var requireData = [];
+
+    _Object$keys(records).forEach(function (key) {
+      return requireData.push('\'' + key + '\': require(\'' + records[key] + '\')');
+    });
+    fsExtra.outputFileSync(path.resolve(recordRoot, 'index.js'), 'module.exports = {\n  ' + requireData.join(',\n  ') + '\n}');
+  }
+  process.exit();
+});
+
+var onProxyRes = function () {
+  var _ref = _asyncToGenerator(index.mark(function _callee(proxyRes, req, res) {
+    return index.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            proxy(req, res);
+            proxy$2(proxyRes, req, res);
+
+          case 2:
+          case 'end':
+            return _context.stop();
+        }
+      }
+    }, _callee, this);
+  }));
+
+  return function onProxyRes(_x, _x2, _x3) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+var proxyInstance = void 0;
+
+function onProxyReq(proxyReq, req) {
+  if (req.body) {
+    var bodyData = _JSON$stringify(req.body);
+
+    proxyReq.setHeader('Content-Type', 'application/json');
+    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+    proxyReq.write(bodyData);
+  }
+  proxy(req);
+}
+
+function onProxyError(e, req, res) {
+  res.writeHead(500, {
+    'Content-Type': 'application/json'
+  });
+  res.end(_JSON$stringify({
+    message: e.message
+  }));
+  error$1(e, req, res);
+}
 
 function createMockProxyServer() {
   var proxyCfg = _Object$assign({
@@ -2473,20 +2607,21 @@ function createMockProxyServer() {
     throw new Error('Can not create proxy server without target');
   }
 
-  return httpProxy.createProxyServer(proxyCfg).on('proxyReq', function (proxyReq, req) {
-    if (req.body) {
-      var bodyData = _JSON$stringify(req.body);
+  return httpProxy.createProxyServer(proxyCfg).on('proxyReq', onProxyReq).on('proxyRes', onProxyRes).on('error', onProxyError);
+}
 
-      proxyReq.setHeader('Content-Type', 'application/json');
-      proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-      proxyReq.write(bodyData);
+function proxy$1(req, res) {
+  if (!proxyInstance) {
+    proxyInstance = createMockProxyServer();
+  }
+
+  return new _Promise(function (resolve$$1, reject) {
+    try {
+      proxyInstance.web(req, res);
+      resolve$$1();
+    } catch (e) {
+      reject(e);
     }
-    proxy(req);
-  }).on('proxyRes', function (proxyReq, req, res) {
-    return proxy(req, res);
-  }).on('error', function (e, req, res) {
-    writeResponseFailed(req, res, e.message);
-    error$1(e, req, res);
   });
 }
 
@@ -2500,17 +2635,7 @@ function createMockServer() {
   });
   overrideTpls(get$1('mock'));
 
-  var proxy$$1 = createMockProxyServer();
-  var q = [api, mock$1, function (req, res) {
-    return new _Promise(function (resolve$$1, reject) {
-      try {
-        proxy$$1.web(req, res);
-        resolve$$1();
-      } catch (e) {
-        reject(e);
-      }
-    });
-  }];
+  var q = [api, mock$$1, proxy$1];
   var len = q.length;
   var app = connect().use(bodyParser.json({
     extended: true
@@ -2570,9 +2695,7 @@ function createMockServer() {
     };
   }());
 
-  return http.createServer(app).on('upgrade', function (req, socket, head) {
-    return proxy$$1.ws(req, socket, head);
-  }).listen(get$1('port'));
+  return http.createServer(app).listen(get$1('port'));
 }
 
 function run() {
@@ -2580,7 +2703,8 @@ function run() {
   var _cli$flags = cli.flags,
       verbose = _cli$flags.verbose,
       target = _cli$flags.target,
-      port = _cli$flags.port;
+      port = _cli$flags.port,
+      record$$1 = _cli$flags.record;
 
   var config = Object.hasOwnProperty.call(cli.flags, 'config') && (cli.flags.config || get$1('config_file_name'));
 
@@ -2589,10 +2713,7 @@ function run() {
   }
   if (config) {
     try {
-      var configFile = require(path.resolve('.', config));
-      _Object$keys(configFile).forEach(function (key) {
-        return put$1(key, configFile[key]);
-      });
+      _Object$assign(opts, require(path.resolve('.', config)));
     } catch (e) {
       throw new Error('Can not load config file ' + config);
     }
@@ -2604,7 +2725,13 @@ function run() {
   if (port) {
     opts.port = port;
   }
-
+  if (record$$1) {
+    opts.record = opts.record || {};
+    opts.record.root = path.resolve(__dirname, get$1('record_dir_name'));
+  }
+  if (opts.proxy && opts.proxy.target && opts.proxy.target.indexOf('http://') !== 0) {
+    opts.proxy.target = 'http://' + opts.proxy.target;
+  }
   if (opts.proxy && opts.proxy.target || config) {
     createMockServer(opts);
     summary(config);
@@ -2615,5 +2742,4 @@ function run() {
 
 run();
 
-exports.createMockProxyServer = createMockProxyServer;
 exports.createMockServer = createMockServer;
