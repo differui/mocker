@@ -18,7 +18,6 @@ function onProxyReq(proxyReq, req) {
 }
 
 async function onProxyRes(proxyRes, req, res) {
-  log.proxy(req, res)
   record.proxy(proxyRes, req, res)
 }
 

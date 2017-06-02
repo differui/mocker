@@ -17,7 +17,6 @@ export function mock(req, res) {
       })
       res.end(JSON.stringify(tpl))
       res[cfg.get('close_switch_name')] = true
-      log.mock(req, res)
     }
 
     resolve()

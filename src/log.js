@@ -7,24 +7,12 @@ function logRequest(type, req) {
   console.log(white(`${type} ${req.method} ${resolve('/', req.url)}`))
 }
 
-function logResponse(type, req, res) {
-  console.log(gray(`${' '.repeat(type.length + 1)}${res.statusCode} ${resolve('/', req.url)}`))
-}
-
-export function mock(req, res) {
-  if (!res) {
-    logRequest(green('  Mock'), req)
-  } else {
-    logResponse('  Mock', req, res)
-  }
+export function mock(req) {
+  logRequest(green('  Mock'), req)
 }
 
 export function proxy(req, res) {
-  if (!res) {
-    logRequest(yellow(' Proxy'), req)
-  } else {
-    logResponse(' Proxy', req, res)
-  }
+  logRequest(yellow(' Proxy'), req)
 }
 
 export function record(jsonPath) {
