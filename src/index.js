@@ -1,58 +1,22 @@
 import connect from 'connect'
 import { resolve as resolvePath } from 'path'
 import { json, urlencoded } from 'body-parser'
-import { createServer, Agent } from 'http'
-import { createProxyServer } from 'http-proxy'
+import { createServer } from 'http'
 import api from './api'
 import cli from './cli'
-import * as util from './util'
+import * as proxy from './proxy'
 import * as mock from './mock'
 import * as log from './log'
 import * as cfg from './config'
-
-export function createMockProxyServer() {
-  const proxyCfg = Object.assign({
-    agent: new Agent({ maxSockets: Number.MAX_VALUE }),
-  }, cfg.get('proxy'))
-
-  if (!proxyCfg.target) {
-    throw new Error('Can not create proxy server without target')
-  }
-
-  return createProxyServer(proxyCfg)
-    .on('proxyReq', (proxyReq, req) => {
-      if (req.body) {
-        const bodyData = JSON.stringify(req.body)
-
-        proxyReq.setHeader('Content-Type', 'application/json')
-        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData))
-        proxyReq.write(bodyData)
-      }
-      log.proxy(req)
-    })
-    .on('proxyRes', (proxyReq, req, res) => log.proxy(req, res))
-    .on('error', (e, req, res) => {
-      util.writeResponseFailed(req, res, e.message)
-      log.error(e, req, res)
-    })
-}
 
 export function createMockServer(opts = {}) {
   Object.keys(opts).forEach(key => cfg.put(key, opts[key]))
   mock.overrideTpls(cfg.get('mock'))
 
-  const proxy = createMockProxyServer()
   const q = [
     api,
     mock.mock,
-    (req, res) => new Promise((resolve, reject) => {
-      try {
-        proxy.web(req, res)
-        resolve()
-      } catch (e) {
-        reject(e)
-      }
-    }),
+    proxy.proxy,
   ]
   const len = q.length
   const app = connect()
@@ -77,13 +41,12 @@ export function createMockServer(opts = {}) {
     })
 
   return createServer(app)
-    .on('upgrade', (req, socket, head) => proxy.ws(req, socket, head))
     .listen(cfg.get('port'))
 }
 
 function run() {
   const opts = {}
-  const { verbose, target, port } = cli.flags
+  const { verbose, target, host, port } = cli.flags
   const config = Object.hasOwnProperty.call(cli.flags, 'config') &&
     (cli.flags.config || cfg.get('config_file_name'))
 
@@ -92,8 +55,7 @@ function run() {
   }
   if (config) {
     try {
-      const configFile = require(resolvePath('.', config))
-      Object.keys(configFile).forEach(key => cfg.put(key, configFile[key]))
+      Object.assign(opts, require(resolvePath('.', config)))
     } catch (e) {
       throw new Error(`Can not load config file ${config}`)
     }
@@ -102,10 +64,15 @@ function run() {
     opts.proxy = opts.proxy || {}
     opts.proxy.target = target
   }
+  if (host) {
+    opts.host = host
+  }
   if (port) {
     opts.port = port
   }
-
+  if (opts.proxy && opts.proxy.target && opts.proxy.target.indexOf('http://') !== 0) {
+    opts.proxy.target = `http://${opts.proxy.target}`
+  }
   if ((opts.proxy && opts.proxy.target) || config) {
     createMockServer(opts)
     log.summary(config)
