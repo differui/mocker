@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { green, gray, yellow, red, white, bold, cyan } from 'colors'
+import { green, yellow, red, white, bold, cyan } from 'colors'
 import boxen from 'boxen'
 import * as cfg from './config'
 
@@ -11,7 +11,7 @@ export function mock(req) {
   logRequest(green('  Mock'), req)
 }
 
-export function proxy(req, res) {
+export function proxy(req) {
   logRequest(yellow(' Proxy'), req)
 }
 

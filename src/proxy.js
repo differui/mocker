@@ -1,6 +1,6 @@
 import { Agent } from 'http'
 import { createProxyServer } from 'http-proxy'
-import * as record from './record'
+import record from './record'
 import * as log from './log'
 import * as cfg from './config'
 
@@ -18,7 +18,7 @@ function onProxyReq(proxyReq, req) {
 }
 
 async function onProxyRes(proxyRes, req, res) {
-  record.proxy(proxyRes, req, res)
+  record(proxyRes, req, res)
 }
 
 function onProxyError(e, req, res) {

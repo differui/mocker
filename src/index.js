@@ -54,11 +54,7 @@ function run() {
     opts.verbose = true
   }
   if (config) {
-    try {
-      Object.assign(opts, require(resolvePath('.', config)))
-    } catch (e) {
-      throw new Error(`Can not load config file ${config}`)
-    }
+    Object.assign(opts, require(resolvePath('.', config)))
   }
   if (target) {
     opts.proxy = opts.proxy || {}
