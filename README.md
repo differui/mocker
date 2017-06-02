@@ -15,19 +15,12 @@ And run this command in your termial:
 mock -t [api host] -p [local port] -c [config file]
 ```
 
-### Options
-
-Run this command to see a list of all available options:
-
-```bash
-mock --help
-```
-
-### Config
+### Config File
 
 You can use config file instead of command line options:
 
 ```js
+// mock.config.js
 module.exports = {
   port: 5000,
   verbose: true,
@@ -36,10 +29,48 @@ module.exports = {
     changeOrigin: true,
   },
   mock: {
-    '/path/to/to/api/1': {},
-    '/path/to/to/api/2': {},
+    '/url_a': {},
+    '/url_b': {},
   },
 }
+```
+
+Run this command to use the config file:
+
+```bash
+mock -c # default config file mock.config.js
+mock -c my.mock.config.js # customize config file
+```
+
+### Record & Replay
+
+`node-http-mock` can construct mock data from real HTTP streams.It identify APIs according to request url, request method and query strings.
+
+```bash
+[method] [url] ? [query string]
+```
+
+Use `-r` option to recording these responses to ordinary JSON files and create a `mock.js` tracing those files:
+
+```bash
+mock -r [directory path]
+```
+
+Press `Crtl-C` will terminate recording.After that you can import the `mock.js` into your config file manually:
+
+```js
+module.exports = {
+  // ...
+  mock: require('./mock.js'),
+}
+```
+
+### Options
+
+Run this command to see a list of all available options:
+
+```bash
+mock --help
 ```
 
 ## License
