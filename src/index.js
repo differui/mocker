@@ -69,7 +69,7 @@ function run() {
   }
   if (record) {
     opts.record = opts.record || {}
-    opts.record.root = resolvePath(__dirname, cfg.get('record_dir_name'))
+    opts.record.root = resolvePath(process.cwd(), cfg.get('record_dir_name'))
   }
   if (opts.proxy && opts.proxy.target && opts.proxy.target.indexOf('http://') !== 0) {
     opts.proxy.target = `http://${opts.proxy.target}`
