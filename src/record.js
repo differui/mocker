@@ -1,4 +1,5 @@
-import { ensureFileSync, writeJsonSync, outputFileSync } from 'fs-extra'
+import { createWriteStream } from 'fs'
+import { ensureFileSync, outputFileSync } from 'fs-extra'
 import { resolve as resolvePath } from 'path'
 import { parse as parseUrl } from 'url'
 import sha1 from 'sha1'
@@ -8,6 +9,50 @@ import * as util from './util'
 
 const records = {}
 
+function generateBodyId(req, res) {
+  const { url, method } = req
+  const { statusCode, statusMessage } = res
+
+  return sha1(`${method}${url}${statusMessage}${statusCode}`)
+}
+
+function generateMessageDescription(req, res) {
+  const messageDescription = {
+    version: res.httpVersion,
+    statusCode: res.statusCode,
+    statusMessage: res.statusMessage,
+    headers: res.headers,
+    rawHeaders: res.rawHeaders,
+    bodyId: generateBodyId(req, res),
+    body: [],
+  }
+
+  return new Promise((resolve, reject) => {
+    res.on('data', (chunk, encoding) => {
+      messageDescription.push([ chunk, encoding ])
+    })
+    res.on('end', () => {
+      messageDescription.trailers = res.trailers
+      messageDescription.rawTrailers = res.rawTrailers
+      resolve(messageDescription)
+    })
+    res.on('error', (err) => {
+      reject(err)
+    })
+  })
+}
+
+function generateBodyPath(req, res) {
+  const recordRoot = cfg.get('record').root
+  const bodyId = generateBodyId(req, res)
+
+  return resolvePath(recordRoot, body)
+}
+
+function generateMessagePath(req, res) {
+
+}
+
 export default async function record(proxyRes, req, res) {
   const recordRoot = cfg.get('record').root
 
@@ -15,21 +60,16 @@ export default async function record(proxyRes, req, res) {
     const { pathname, query } = parseUrl(req.url)
     const queryShaSuffix = query ? `_${sha1(query)}` : ''
     const relativePathname = pathname.indexOf('/') === 0 ? pathname.substring(1) : pathname
-    const relativeJsonPath = `${relativePathname}${queryShaSuffix}.json`
-    const absoluteJsonPath = resolvePath(recordRoot, relativeJsonPath)
-    let jsonData
+    const relativeRecordDataPath = `${relativePathname}${queryShaSuffix}`
+    const absoluteRecordDataPath = resolvePath(recordRoot, relativeRecordDataPath)
 
     try {
-      jsonData = JSON.parse(await util.parseBody(proxyRes))
+      records[req.url] = `./${relativeRecordDataPath}`
+      ensureFileSync(absoluteRecordDataPath)
+      proxyRes.pipe(createWriteStream(absoluteRecordDataPath))
+      log.record(absoluteRecordDataPath, req, res)
     } catch (e) {
       log.error(e, req)
-    }
-
-    if (jsonData) {
-      records[req.url] = `./${relativeJsonPath}`
-      ensureFileSync(absoluteJsonPath)
-      writeJsonSync(absoluteJsonPath, jsonData, { spaces: 2 })
-      log.record(absoluteJsonPath, req, res)
     }
   }
 }

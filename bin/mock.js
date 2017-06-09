@@ -13,6 +13,7 @@ var colors = require('colors');
 var boxen = _interopDefault(require('boxen'));
 var meow = _interopDefault(require('meow'));
 var httpProxy = require('http-proxy');
+var fs = require('fs');
 var fsExtra = require('fs-extra');
 var url = require('url');
 
@@ -2231,7 +2232,7 @@ var index$1 = {
 
 var name = "node-http-mock";
 var bin_name = "mock";
-var version = "0.5.1";
+var version = "0.5.2";
 var description = "A HTTP mock server for node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "./node_modules/.bin/rollup -c && echo '#!/usr/bin/env node' > ./bin/mock.js && cat ./dest/bundle.js >> ./bin/mock.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "test": "./node_modules/ava" };
@@ -2402,22 +2403,6 @@ function writeResponseFailed(req, res, message) {
     message: message
   }, null, 2));
   res[get$1('close_switch_name')] = true;
-}
-
-function parseBody(req) {
-  var body = '';
-
-  return new _Promise(function (resolve$$1, reject) {
-    req.on('data', function (d) {
-      body += d;
-    });
-    req.on('end', function () {
-      return resolve$$1(body);
-    });
-    req.on('error', function (e) {
-      return reject(e);
-    });
-  });
 }
 
 function api(req, res) {
@@ -2700,7 +2685,7 @@ var records = {};
 
 var record$1 = (function () {
   var _ref = _asyncToGenerator(index.mark(function _callee(proxyRes, req, res) {
-    var recordRoot, _parseUrl, pathname, query, queryShaSuffix, relativePathname, relativeJsonPath, absoluteJsonPath, jsonData;
+    var recordRoot, _parseUrl, pathname, query, queryShaSuffix, relativePathname, relativeRecordDataPath, absoluteRecordDataPath;
 
     return index.wrap(function _callee$(_context) {
       while (1) {
@@ -2708,49 +2693,31 @@ var record$1 = (function () {
           case 0:
             recordRoot = get$1('record').root;
 
-            if (!recordRoot) {
-              _context.next = 20;
-              break;
+
+            if (recordRoot) {
+              _parseUrl = url.parse(req.url), pathname = _parseUrl.pathname, query = _parseUrl.query;
+              queryShaSuffix = query ? '_' + sha1(query) : '';
+              relativePathname = pathname.indexOf('/') === 0 ? pathname.substring(1) : pathname;
+              relativeRecordDataPath = '' + relativePathname + queryShaSuffix;
+              absoluteRecordDataPath = path.resolve(recordRoot, relativeRecordDataPath);
+
+
+              try {
+                records[req.url] = './' + relativeRecordDataPath;
+                fsExtra.ensureFileSync(absoluteRecordDataPath);
+                proxyRes.pipe(fs.createWriteStream(absoluteRecordDataPath));
+                record(absoluteRecordDataPath, req, res);
+              } catch (e) {
+                error$1(e, req);
+              }
             }
 
-            _parseUrl = url.parse(req.url), pathname = _parseUrl.pathname, query = _parseUrl.query;
-            queryShaSuffix = query ? '_' + sha1(query) : '';
-            relativePathname = pathname.indexOf('/') === 0 ? pathname.substring(1) : pathname;
-            relativeJsonPath = '' + relativePathname + queryShaSuffix + '.json';
-            absoluteJsonPath = path.resolve(recordRoot, relativeJsonPath);
-            jsonData = void 0;
-            _context.prev = 8;
-            _context.t0 = JSON;
-            _context.next = 12;
-            return parseBody(proxyRes);
-
-          case 12:
-            _context.t1 = _context.sent;
-            jsonData = _context.t0.parse.call(_context.t0, _context.t1);
-            _context.next = 19;
-            break;
-
-          case 16:
-            _context.prev = 16;
-            _context.t2 = _context['catch'](8);
-
-            error$1(_context.t2, req);
-
-          case 19:
-
-            if (jsonData) {
-              records[req.url] = './' + relativeJsonPath;
-              fsExtra.ensureFileSync(absoluteJsonPath);
-              fsExtra.writeJsonSync(absoluteJsonPath, jsonData, { spaces: 2 });
-              record(absoluteJsonPath, req, res);
-            }
-
-          case 20:
+          case 2:
           case 'end':
             return _context.stop();
         }
       }
-    }, _callee, this, [[8, 16]]);
+    }, _callee, this);
   }));
 
   function record$$1(_x, _x2, _x3) {
