@@ -80,7 +80,10 @@ module.exports = {
   record: true,
   replay: false,
   port: 5000,
-  server: 'http://localhost:8888',
+  proxy: {
+    target: 'http://localhost:8888',
+    changeOrigin: true,
+  },
   verbose: true,
 }
 ```
@@ -91,6 +94,10 @@ Run this command to use the config file:
 rnr -c # default config file rnr.config.js
 rnr -c my.rnr.config.js # customize config file
 ```
+
+## More
+
++ [node-http-proxy](https://github.com/nodejitsu/node-http-proxy)
 
 ## License
 
