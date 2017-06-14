@@ -1,61 +1,47 @@
-import { ensureFileSync, writeJsonSync, outputFileSync } from 'fs-extra'
+import { createWriteStream } from 'fs'
 import { resolve as resolvePath } from 'path'
-import { parse as parseUrl } from 'url'
 import sha1 from 'sha1'
 import * as cfg from './config'
-import * as log from './log'
-import * as util from './util'
+import { stringifyByOrder, stringifyRequest } from './util'
 
-const records = {}
-
-export default async function record(proxyRes, req, res) {
-  const recordRoot = cfg.get('record').root
-
-  if (recordRoot) {
-    const { pathname, query } = parseUrl(req.url)
-    const queryShaSuffix = query ? `_${sha1(query)}` : ''
-    const relativePathname = pathname.indexOf('/') === 0 ? pathname.substring(1) : pathname
-    const relativeJsonPath = `${relativePathname}${queryShaSuffix}.json`
-    const absoluteJsonPath = resolvePath(recordRoot, relativeJsonPath)
-    let jsonData
-
-    try {
-      jsonData = JSON.parse(await util.parseBody(proxyRes))
-    } catch (e) {
-      log.error(e, req)
-    }
-
-    if (jsonData) {
-      records[req.url] = `./${relativeJsonPath}`
-      ensureFileSync(absoluteJsonPath)
-      writeJsonSync(absoluteJsonPath, jsonData, { spaces: 2 })
-      log.record(absoluteJsonPath, req, res)
-    }
+export function generateMessageDescription(req, res) {
+  const messageDescription = {
+    request: {
+      version: req.httpVersion,
+      headers: req.headers,
+      url: req.url,
+      body: req.body,
+    },
+    response: {
+      version: res.httpVersion,
+      statusCode: res.statusCode,
+      statusMessage: res.statusMessage,
+      headers: res.headers,
+      body: [],
+    },
   }
+
+  return new Promise((resolve, reject) => {
+    res.on('data', (chunk, encoding) => {
+      messageDescription.response.body.push([chunk, encoding])
+    })
+    res.on('end', () => {
+      messageDescription.response.trailers = res.trailers
+      resolve(messageDescription)
+    })
+    res.on('error', (err) => {
+      reject(err)
+    })
+  })
 }
 
-process.on('SIGINT', () => {
-  const recordRoot = cfg.get('record').root
+export default async function record(proxyRes, req) {
+  const recordDir = cfg.get('record_dir')
+  const recordId = sha1(stringifyRequest(req))
+  const recordPathname = resolvePath(recordDir, recordId)
+  const recordWriteStream = createWriteStream(recordPathname, { defaultEncoding: 'utf8' })
+  const recordDescription = await generateMessageDescription(req, proxyRes)
 
-  if (recordRoot) {
-    const absoluteIndexPath = resolvePath(recordRoot, 'index.js')
-    const absoluteRecordsPath = resolvePath(recordRoot, 'records.json')
-    let mergeRecords
-
-    try {
-      mergeRecords = Object.assign({}, records, require(absoluteRecordsPath))
-    } catch (e) {
-      mergeRecords = records
-    }
-
-    outputFileSync(absoluteRecordsPath, JSON.stringify(mergeRecords, null, 2))
-    outputFileSync(absoluteIndexPath, [
-      'const apiMapToJson = require(\'./records.json\')',
-      'const mockData = {}',
-      '',
-      'Object.keys(apiMapToJson).forEach(key => mockData[key] = require(apiMapToJson[key]))',
-      'module.exports = mockData',
-    ].join('\n'))
-  }
-  process.exit()
-})
+  recordWriteStream.write(stringifyByOrder(recordDescription, 2))
+  recordWriteStream.end()
+}

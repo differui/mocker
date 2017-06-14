@@ -1,24 +1,31 @@
 import { Agent } from 'http'
 import { createProxyServer } from 'http-proxy'
 import record from './record'
+import replay from './replay'
 import * as log from './log'
 import * as cfg from './config'
 
 let proxyInstance
 
-function onProxyReq(proxyReq, req) {
-  if (req.body) {
-    const bodyData = JSON.stringify(req.body)
+function onProxyReq(proxyReq, req, res) {
+  if (cfg.get('replay') && cfg.get('record_dir')) {
+    replay(req, res)
+  } else {
+    if (req.body) {
+      const bodyData = JSON.stringify(req.body)
 
-    proxyReq.setHeader('Content-Type', 'application/json')
-    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData))
-    proxyReq.write(bodyData)
+      proxyReq.setHeader('Content-Type', 'application/json')
+      proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData))
+      proxyReq.write(bodyData)
+    }
+    log.proxy(req)
   }
-  log.proxy(req)
 }
 
-async function onProxyRes(proxyRes, req, res) {
-  record(proxyRes, req, res)
+function onProxyRes(proxyRes, req, res) {
+  if (cfg.get('record') && cfg.get('record_dir')) {
+    record(proxyRes, req, res)
+  }
 }
 
 function onProxyError(e, req, res) {
@@ -31,10 +38,12 @@ function onProxyError(e, req, res) {
   log.error(e, req, res)
 }
 
-export function createMockProxyServer() {
-  const proxyCfg = Object.assign({
+function createServer() {
+  const proxyCfg = {
     agent: new Agent({ maxSockets: Number.MAX_VALUE }),
-  }, cfg.get('proxy'))
+    changeOrigin: true,
+    target: cfg.get('server'),
+  }
 
   if (!proxyCfg.target) {
     throw new Error('Can not create proxy server without target')
@@ -46,9 +55,9 @@ export function createMockProxyServer() {
     .on('error', onProxyError)
 }
 
-export function proxy(req, res) {
+export default function proxy(req, res) {
   if (!proxyInstance) {
-    proxyInstance = createMockProxyServer()
+    proxyInstance = createServer()
   }
 
   return new Promise((resolve, reject) => {

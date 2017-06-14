@@ -1,25 +1,33 @@
+import { hasOwn } from './util'
+
 const defaultConfig = {
-  close_switch_name: '__response_closed',
-  config_file_name: 'mock.config.js',
-  record_dir_name: '.mock',
+  config_file_name: 'rr.config.js',
+  record_dir_name: '.record',
+  record_dir: '',
+  record: false,
+  replay: false,
   verbose: false,
   port: 5000,
-  record: {},
-  proxy: {},
-  mock: {},
+  server: '',
 }
-const runtimeConfig = {}
+const runtimeConfig = Object.assign({}, defaultConfig)
+
+export function has(key) {
+  return hasOwn(defaultConfig, key)
+}
 
 export function get(key) {
-  return Object.assign({}, defaultConfig, runtimeConfig)[key] || null
+  if (has(key)) {
+    return runtimeConfig[key]
+  }
 }
 
 export function put(key, value) {
-  if (Object.hasOwnProperty.call(defaultConfig, key)) {
+  if (has(key)) {
     runtimeConfig[key] = value
   }
 }
 
 export function keys() {
-  return Object.keys(Object.assign({}, defaultConfig, runtimeConfig))
+  return Object.keys(defaultConfig)
 }

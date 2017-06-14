@@ -10,6 +10,7 @@ export default {
   dest: './dest/bundle.js',
   format: 'cjs',
   external: [
+    'fs',
     'http',
     'boxen',
     'meow',
@@ -40,7 +41,7 @@ export default {
     }),
     resolve(),
     replace({
-      'process.env.NODE_ENV': JSON.stringify('development'),
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
     })
   ]
 }

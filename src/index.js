@@ -1,24 +1,18 @@
 import connect from 'connect'
 import { resolve as resolvePath } from 'path'
+import { ensureDirSync } from 'fs-extra'
 import { json, urlencoded } from 'body-parser'
-import { createServer } from 'http'
-import api from './api'
+import { createServer as createHttpServer } from 'http'
 import cli from './cli'
-import * as proxy from './proxy'
-import * as mock from './mock'
+import proxy from './proxy'
+import { hasOwn } from './util'
 import * as log from './log'
 import * as cfg from './config'
 
-export function createMockServer(opts = {}) {
+export function createServer(opts = {}) {
   Object.keys(opts).forEach(key => cfg.put(key, opts[key]))
-  mock.overrideTpls(cfg.get('mock'))
 
-  const q = [
-    api,
-    mock.mock,
-    proxy.proxy,
-  ]
-  const len = q.length
+  const recordDir = cfg.get('record_dir')
   const app = connect()
     .use(json({
       extended: true,
@@ -26,55 +20,48 @@ export function createMockServer(opts = {}) {
     .use(urlencoded({
       extended: true,
     }))
-    .use(async (req, res) => {
-      /* eslint-disable no-await-in-loop */
-      for (let i = 0; i < len; i += 1) {
-        if (res[cfg.get('close_switch_name')]) {
-          return
-        }
-        try {
-          await q[i](req, res)
-        } catch (e) {
-          throw e
-        }
-      }
-    })
+    .use(proxy)
 
-  return createServer(app)
+  if (recordDir) {
+    ensureDirSync(recordDir)
+  }
+
+  return createHttpServer(app)
     .listen(cfg.get('port'))
 }
 
 function run() {
   const opts = {}
-  const { verbose, target, port, record } = cli.flags
-  const config = Object.hasOwnProperty.call(cli.flags, 'config') &&
-    (cli.flags.config || cfg.get('config_file_name'))
+  const { verbose, server, port, record, replay, both } = cli.flags
+  const config = hasOwn(cli.flags, 'config') && (cli.flags.config || cfg.get('config_file_name'))
 
+  if (record || both) {
+    opts.record = true
+    opts.record_dir = resolvePath(process.cwd(), cfg.get('record_dir_name'))
+  }
+  if (replay || both) {
+    opts.replay = true
+  }
   if (verbose) {
     opts.verbose = true
-  }
-  if (config) {
-    Object.assign(opts, require(resolvePath('.', config)))
-  }
-  if (target) {
-    opts.proxy = opts.proxy || {}
-    opts.proxy.target = target
   }
   if (port) {
     opts.port = port
   }
-  if (record) {
-    opts.record = opts.record || {}
-    opts.record.root = resolvePath(process.cwd(), cfg.get('record_dir_name'))
+  if (server) {
+    opts.server = server
   }
-  if (opts.proxy && opts.proxy.target && opts.proxy.target.indexOf('http://') !== 0) {
-    opts.proxy.target = `http://${opts.proxy.target}`
+  if (config) {
+    Object.assign(opts, require(resolvePath('.', config)))
   }
-  if ((opts.proxy && opts.proxy.target) || config) {
-    createMockServer(opts)
-    log.summary(config)
+  if (opts.server && opts.server.indexOf('http://') !== 0) {
+    opts.target = `http://${opts.proxy.target}`
+  }
+  if (opts.server) {
+    createServer(opts)
+    log.summary(opts)
   } else {
-    console.log(cli.help)
+    log.log(cli.help)
   }
 }
 
