@@ -1,7 +1,7 @@
 import { hasOwn } from './util'
 
 const defaultConfig = {
-  config_file_name: 'rr.config.js',
+  config_file_name: 'rnr.config.js',
   record_dir_name: '.record',
   record_dir: '',
   record: false,

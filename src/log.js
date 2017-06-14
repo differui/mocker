@@ -31,7 +31,7 @@ export function error(e, req) {
 
 export function summary(config) {
   const port = cfg.get('port')
-  const target = cfg.get('proxy').target
+  const server = cfg.get('server')
   const recordDir = cfg.get('record_dir')
   const replay = cfg.get('replay')
   const verbose = cfg.get('verbose')
@@ -40,7 +40,7 @@ export function summary(config) {
   message += green('Mocking!\n')
   message += '\n'
   message += `${bold('- Local:   ')}http://localhost:${port}\n`
-  message += `${bold('- Porxy:   ')}${target}\n`
+  message += `${bold('- Porxy:   ')}${server}\n`
   message += `${bold('- Config:  ')}${config || red('OFF')}\n`
   message += `${bold('- Record:  ')}${recordDir || red('OFF')}\n`
   message += `${bold('- Replay:  ')}${replay ? green('ON') : red('OFF')}\n`

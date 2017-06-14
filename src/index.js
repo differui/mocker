@@ -55,7 +55,7 @@ function run() {
     Object.assign(opts, require(resolvePath('.', config)))
   }
   if (opts.server && opts.server.indexOf('http://') !== 0) {
-    opts.target = `http://${opts.proxy.target}`
+    opts.server = `http://${opts.server}`
   }
   if (opts.server) {
     createServer(opts)
