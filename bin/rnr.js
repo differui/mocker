@@ -2037,7 +2037,7 @@ var _Object$keys = unwrapExports(keys);
 
 var name = "node-rnr";
 var bin_name = "rnr";
-var version = "0.6.7";
+var version = "0.6.8";
 var description = "Record & Replay HTTP streams by node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "NODE_MODULES=0 node ./build/set-babelrc.js && ./node_modules/.bin/rollup -c", "postbuild": "echo '#!/usr/bin/env node' > ./bin/rnr.js && cat ./dest/bundle.js >> ./bin/rnr.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "pretest": "NODE_ENV=development npm run build", "test": "NODE_MODULES=commonjs node ./build/set-babelrc.js && ./node_modules/.bin/ava -s", "prepublish": "npm run test && NODE_ENV=production npm run build" };
@@ -2903,7 +2903,6 @@ function summary() {
   var target = get('proxy').target;
   var recordDir = get('record_dir');
   var replayDir = get('replay_dir');
-  var replay = get('replay');
   var verbose = get('verbose');
   var message = '';
 
@@ -2923,7 +2922,7 @@ function summary() {
 }
 
 function replay$$1(req, res) {
-  return new _Promise(function (resolve$$1, reject) {
+  return new _Promise(function (resolve$$1) {
     var replayDir = get('replay_dir');
     var recordId = sha1(stringifyRequest(req));
     var recordPath = path.resolve(replayDir, recordId);
@@ -3035,7 +3034,7 @@ var record$1 = (function () {
 
 function onProxyReq(proxyReq, req, res) {
   req.pipe(proxyReq);
-  proxy(req);
+  proxy(req, res);
 }
 
 function onProxyRes(proxyRes, req, res) {
