@@ -59,7 +59,7 @@ function run() {
   }
   if (opts.server) {
     createServer(opts)
-    log.summary(opts)
+    log.summary()
   } else {
     log.log(cli.help)
   }

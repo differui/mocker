@@ -41,7 +41,6 @@ export function summary(config) {
   message += '\n'
   message += `${bold('- Local:   ')}http://localhost:${port}\n`
   message += `${bold('- Porxy:   ')}${server}\n`
-  message += `${bold('- Config:  ')}${config || red('OFF')}\n`
   message += `${bold('- Record:  ')}${recordDir || red('OFF')}\n`
   message += `${bold('- Replay:  ')}${replay ? green('ON') : red('OFF')}\n`
   message += `${bold('- Verbose: ')}${verbose ? green('ON') : red('OFF')}`
