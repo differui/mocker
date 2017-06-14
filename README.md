@@ -1,18 +1,73 @@
-# node-http-mock
-> A HTTP mock server for node.js
+# node-rnr
+> Record & Replay HTTP streams by node.js
+
+<p>
+    <a href="LICENSE">
+        <img src="https://img.shields.io/badge/license-MIT-brightgreen.svg" alt="Software License" />
+    </a>
+    <a href="https://github.com/differui/node-rnr/issues">
+        <img src="https://img.shields.io/github/issues/differui/node-rnr.svg" alt="Issues" />
+    </a>
+    <a href="http://standardjs.com/">
+        <img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg" alt="JavaScript Style Guide" />
+    </ahttp->
+    <a href="https://npmjs.org/package/node-rnr">
+        <img src="https://img.shields.io/npm/v/node-rnr.svg?style=flat-squar" alt="NPM" />
+    </a>
+    <a href="https://travis-ci.org/differui/node-rnr">
+        <img src="https://travis-ci.org/differui/node-rnr.svg?branch=master" />
+    </a>
+</p>
+
+## Overview
+
+rnr creating a proxy server between local client and remote server.It recording remote server responses on local file system and responsing client requests with the records in future.
+
+```bash
+
+        request   __________  request   ________
+local      →     | has      |    →     | remote |
+client     ←     | records? |    ←     | server |
+        response |__________| response |________|
+                      ↓↑
+                  file system
+```
 
 ## Usage
 
 Install it:
 
 ```js
-npm install node-http-mock -g
+npm install node-rnr -g
 ```
 
-And run this command in your termial:
+### Commands
 
 ```bash
-mock -t [api host] -p [local port] -c [config file]
+rnr --server [remote server host]
+```
+
+Proxy:
+
+```bash
+# dumb proxy
+rnr --server http://localhost:8888
+```
+
+Record & Replay:
+
+```bash
+# record client requests
+rnr --record --server http://localhost:8888
+
+# replay request with records
+rnr --replay --server http://localhost:8888
+```
+
+See a list of all available options:
+
+```bash
+rnr --help
 ```
 
 ### Config File
@@ -20,57 +75,21 @@ mock -t [api host] -p [local port] -c [config file]
 You can use config file instead of command line options:
 
 ```js
-// mock.config.js
+// rnr.config.js
 module.exports = {
+  record: true,
+  replay: false,
   port: 5000,
+  server: 'http://localhost:8888',
   verbose: true,
-  proxy: {
-    target: 'api host',
-    changeOrigin: true,
-  },
-  mock: {
-    '/url_a': {},
-    '/url_b': {},
-  },
 }
 ```
 
 Run this command to use the config file:
 
 ```bash
-mock -c # default config file mock.config.js
-mock -c my.mock.config.js # customize config file
-```
-
-### Record & Replay
-
-`node-http-mock` can construct mock data from real HTTP streams.It identify APIs according to request url, request method and query strings.
-
-```bash
-[method] [url] ? [query string]
-```
-
-Use `-r` option to recording these responses as ordinary JSON files in `.mock/`:
-
-```bash
-mock -r [directory path]
-```
-
-Press <kbd>Crtl-C</kbd> will terminate recording and create `index.js` tracing the JSON files.After that you can import the `index.js` into your config file manually:
-
-```js
-module.exports = {
-  // ...
-  mock: require('./.mock/index.js'),
-}
-```
-
-### Options
-
-Run this command to see a list of all available options:
-
-```bash
-mock --help
+rnr -c # default config file rnr.config.js
+rnr -c my.rnr.config.js # customize config file
 ```
 
 ## License

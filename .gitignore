@@ -1,2 +1,3 @@
 dest/*.js
 node_modules/
+test/.mock/

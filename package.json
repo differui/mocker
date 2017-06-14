@@ -1,26 +1,45 @@
 {
-  "name": "node-http-mock",
-  "bin_name": "mock",
-  "version": "0.5.2",
-  "description": "A HTTP mock server for node.js",
+  "name": "node-rnr",
+  "bin_name": "rnr",
+  "version": "0.6.1",
+  "description": "Record & Replay HTTP streams by node.js",
   "main": "dest/bundle.js",
   "scripts": {
-    "build": "./node_modules/.bin/rollup -c && echo '#!/usr/bin/env node' > ./bin/mock.js && cat ./dest/bundle.js >> ./bin/mock.js",
+    "build": "NODE_MODULES=0 node ./build/set-babelrc.js && ./node_modules/.bin/rollup -c",
+    "postbuild": "echo '#!/usr/bin/env node' > ./bin/mock.js && cat ./dest/bundle.js >> ./bin/mock.js",
     "prestart": "npm run build",
     "start": "node ./dest/bundle.js",
-    "test": "./node_modules/ava"
+    "pretest": "NODE_ENV=development npm run build",
+    "test": "NODE_MODULES=commonjs node ./build/set-babelrc.js && ./node_modules/.bin/ava -s",
+    "prepublish": "npm run test && NODE_ENV=production npm run build"
   },
   "keywords": [
     "rollup"
   ],
   "author": "differui<differui@gmail.com>",
   "bin": {
-    "mock": "bin/mock.js"
+    "rnr": "bin/rnr.js"
   },
   "files": [
     "bin"
   ],
   "license": "MIT",
+  "ava": {
+    "require": [
+      "babel-register"
+    ],
+    "files": [
+      "test/**/*.spec.js"
+    ],
+    "sources": [
+      "test/**/*.js"
+    ],
+    "babel": {
+      "presets": [
+        "env"
+      ]
+    }
+  },
   "dependencies": {
     "babel-runtime": "^6.23.0",
     "body-parser": "^1.17.2",
@@ -38,9 +57,11 @@
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.4.0",
+    "babel-register": "^6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.3.0",
+    "rimraf": "^2.6.1",
     "rollup": "^0.41.6",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-commonjs": "^8.0.2",
