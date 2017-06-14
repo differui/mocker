@@ -6,7 +6,7 @@
   "main": "dest/bundle.js",
   "scripts": {
     "build": "NODE_MODULES=0 node ./build/set-babelrc.js && ./node_modules/.bin/rollup -c",
-    "postbuild": "echo '#!/usr/bin/env node' > ./bin/mock.js && cat ./dest/bundle.js >> ./bin/mock.js",
+    "postbuild": "echo '#!/usr/bin/env node' > ./bin/rnr.js && cat ./dest/bundle.js >> ./bin/rnr.js",
     "prestart": "npm run build",
     "start": "node ./dest/bundle.js",
     "pretest": "NODE_ENV=development npm run build",
