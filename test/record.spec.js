@@ -5,7 +5,6 @@ import { readJsonSync } from 'fs-extra'
 import { resolve as resolvePath } from 'path'
 import {
   isSameJson,
-  concatBody,
   createRequest,
   createRecordServer,
   createGatewayServer,
@@ -14,6 +13,7 @@ import {
 } from './helpers'
 import { createRecordId } from '../src/record'
 import * as cfg from '../src/config'
+import { stringifyBody } from '../src/util'
 
 const recordDir = resolvePath(process.cwd(), 'test', cfg.get('record_dir_name'))
 
@@ -47,11 +47,11 @@ test('should create recording json file', async t => {
 
   // request
   t.true(json.request.url === '/gateway/a')
-  t.true(isSameJson(json.request.body, templateA))
+  t.true(isSameJson(stringifyBody(json.request.body), templateA))
 
   // response
   t.true(json.response.statusCode === 200)
-  t.true(isSameJson(concatBody(json.response.body), expected))
+  t.true(isSameJson(stringifyBody(json.response.body), expected))
 })
 
 test('should create same recording json file', async t => {

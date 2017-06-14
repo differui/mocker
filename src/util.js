@@ -2,33 +2,6 @@ export function hasOwn(obj, key) {
   return (obj.hasOwnProperty || Object.prototype.hasOwnProperty).call(obj, key)
 }
 
-export function responseJson(req, res, code, json) {
-  res.writeHead(code, {
-    'Content-Type': 'application/json',
-    'Content-Length': Buffer.byteLength(json),
-  })
-  res.write(json)
-  res.end()
-}
-
-export function responseSucceed(req, res, data) {
-  const json = JSON.stringify({
-    succeeded: true,
-    data,
-  }, null, 2)
-
-  responseJson(req, res, 200, json)
-}
-
-export function responseFailed(req, res, message) {
-  const json = JSON.stringify({
-    succeeded: false,
-    message,
-  }, null, 2)
-
-  responseJson(req, res, 400, json)
-}
-
 export function stringifyRequest(req) {
   const { httpVersion, method, url, headers, body } = req
   const message = [
@@ -60,4 +33,33 @@ export function stringifyByOrder(obj, ident = 0) {
   }
 
   return JSON.stringify(obj, replacer, ident)
+}
+
+export function convertRawHeaders(rawHeader) {
+  const headers = {}
+  const pair = []
+
+  rawHeader.forEach((i) => {
+    pair.push(i)
+    if (pair.length === 2) {
+      headers[pair[0]] = pair[1]
+      pair.length = 0
+    }
+  })
+
+  return headers
+}
+
+export function parseBody(message) {
+  const body = []
+
+  return new Promise((resolve, reject) => {
+    message.on('data', c => body.push(c))
+    message.on('end', () => resolve(body))
+    message.on('error', err => reject(err))
+  })
+}
+
+export function stringifyBody(body) {
+  return new Buffer(body[0]).toString()
 }

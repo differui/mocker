@@ -11,7 +11,7 @@ export default meow(`
       -2, --replay  Response HTTP request with records
       -3, --both    Record && Replay
       -c, --config  Use config file
-      -s, --server  Remote server host
+      -t, --target  Remote server host
       -h, --host    ${pkg.bin_name} proxy server host name
       -p, --port    ${pkg.bin_name} proxy server port number
       -v, --verbose Output logs to stdout
@@ -26,7 +26,7 @@ export default meow(`
   ],
   string: [
     'config',
-    'server',
+    'target',
     'host',
   ],
   number: [
@@ -34,7 +34,7 @@ export default meow(`
   ],
   alias: {
     c: 'config',
-    s: 'server',
+    t: 'target',
     p: 'port',
     h: 'host',
     v: 'verbose',

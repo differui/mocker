@@ -7,20 +7,25 @@ import * as cfg from './config'
 import * as log from './log'
 
 export default function replay(req, res) {
-  const recordDir = cfg.get('record_dir')
-  const recordId = sha1(stringifyRequest(req))
-  const recordPath = resolvePath(recordDir, recordId)
+  return new Promise((resolve, reject) => {
+    const replayDir = cfg.get('replay_dir')
+    const recordId = sha1(stringifyRequest(req))
+    const recordPath = resolvePath(replayDir, recordId)
 
-  if (!existsSync(recordPath)) {
-    return
-  }
+    if (existsSync(recordPath)) {
+      const {
+        body,
+        headers,
+        statusCode,
+        statusText,
+      } = readJsonSync(recordPath).response
 
-  const { body, headers, statusCode, statusText } = readJsonSync(recordPath).response
-
-  res.writeHead(statusCode, statusText, headers)
-  body.forEach(([chunk]) => {
-    res.write(new Buffer(chunk))
+      Object.keys(headers).forEach(key => res.setHeader(key, headers[key]))
+      res.writeHead(statusCode, statusText)
+      res.write(new Buffer(body[0]))
+      res.end()
+      log.replay(req, res)
+    }
+    resolve()
   })
-  res.end()
-  log.replay(recordPath, req, res)
 }

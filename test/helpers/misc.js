@@ -7,8 +7,11 @@ export function isSameJson(a, b) {
   return stringifyByOrder(objA) === stringifyByOrder(objB)
 }
 
-export function concatBody(body) {
-  const data = body.reduce((rtn, d) => rtn.concat(d[0].data), [])
-
-  return new Buffer(data).toString()
+export function responseJson(req, res, code, json) {
+  res.writeHead(code, {
+    'Content-Type': 'application/json',
+    'Content-Length': Buffer.byteLength(json),
+  })
+  res.write(json)
+  res.end()
 }

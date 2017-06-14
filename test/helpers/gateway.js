@@ -1,5 +1,5 @@
 import { createServer } from 'http'
-import { responseJson } from '../../src/util'
+import { responseJson } from './misc'
 import cfg from './config'
 
 let server

@@ -5,10 +5,11 @@ const defaultConfig = {
   record_dir_name: '.record',
   record_dir: '',
   record: false,
+  replay_dir: '',
   replay: false,
   verbose: false,
   port: 5000,
-  server: '',
+  proxy: {},
 }
 const runtimeConfig = Object.assign({}, defaultConfig)
 

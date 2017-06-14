@@ -17,22 +17,23 @@ export function proxy(req) {
   logRequest(yellow(' Proxy'), req)
 }
 
-export function replay(jsonPath, req, res) {
-  log(`${bold(green('Replay'))} ${res.statusCode} ${jsonPath}`)
+export function replay(req, res) {
+  log(`${bold(green('Replay'))} ${res.statusCode} ${req.url}`)
 }
 
-export function record(jsonPath, req, res) {
-  log(`${bold(cyan('Record'))} ${res.statusCode} ${jsonPath}`)
+export function record(req, res) {
+  log(`${bold(cyan('Record'))} ${res.statusCode} ${req.url}`)
 }
 
 export function error(e, req) {
   log(` ${bold(red('Error'))} ${e.message} ${resolve('/', req.url)}`)
 }
 
-export function summary(config) {
+export function summary() {
   const port = cfg.get('port')
-  const server = cfg.get('server')
+  const target = cfg.get('proxy').target
   const recordDir = cfg.get('record_dir')
+  const replayDir = cfg.get('replay_dir')
   const replay = cfg.get('replay')
   const verbose = cfg.get('verbose')
   let message = ''
@@ -40,9 +41,9 @@ export function summary(config) {
   message += green('rnr is running!\n')
   message += '\n'
   message += `${bold('- Local:   ')}http://localhost:${port}\n`
-  message += `${bold('- Porxy:   ')}${server}\n`
+  message += `${bold('- Porxy:   ')}${target}\n`
   message += `${bold('- Record:  ')}${recordDir || red('OFF')}\n`
-  message += `${bold('- Replay:  ')}${replay ? green('ON') : red('OFF')}\n`
+  message += `${bold('- Replay:  ')}${replayDir || red('OFF')}\n`
   message += `${bold('- Verbose: ')}${verbose ? green('ON') : red('OFF')}`
 
   log(boxen(message, {

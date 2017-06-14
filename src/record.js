@@ -2,13 +2,19 @@ import { createWriteStream } from 'fs'
 import { resolve as resolvePath } from 'path'
 import sha1 from 'sha1'
 import * as cfg from './config'
-import { stringifyByOrder, stringifyRequest } from './util'
+import * as log from './log'
+import {
+  convertRawHeaders,
+  parseBody,
+  stringifyByOrder,
+  stringifyRequest,
+} from './util'
 
-export function generateMessageDescription(req, res) {
-  const messageDescription = {
+async function generateMessageDescription(req, res) {
+  return {
     request: {
       version: req.httpVersion,
-      headers: req.headers,
+      headers: convertRawHeaders(req.rawHeaders),
       url: req.url,
       body: req.body,
     },
@@ -16,26 +22,14 @@ export function generateMessageDescription(req, res) {
       version: res.httpVersion,
       statusCode: res.statusCode,
       statusMessage: res.statusMessage,
-      headers: res.headers,
-      body: [],
+      headers: convertRawHeaders(res.rawHeaders),
+      body: await parseBody(res),
+      trailers: res.trailers,
     },
   }
-
-  return new Promise((resolve, reject) => {
-    res.on('data', (chunk, encoding) => {
-      messageDescription.response.body.push([chunk, encoding])
-    })
-    res.on('end', () => {
-      messageDescription.response.trailers = res.trailers
-      resolve(messageDescription)
-    })
-    res.on('error', (err) => {
-      reject(err)
-    })
-  })
 }
 
-export default async function record(proxyRes, req) {
+export default async function record(proxyRes, req, res) {
   const recordDir = cfg.get('record_dir')
   const recordId = sha1(stringifyRequest(req))
   const recordPathname = resolvePath(recordDir, recordId)
@@ -44,4 +38,5 @@ export default async function record(proxyRes, req) {
 
   recordWriteStream.write(stringifyByOrder(recordDescription, 2))
   recordWriteStream.end()
+  log.record(req, res)
 }

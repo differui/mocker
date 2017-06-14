@@ -8,7 +8,10 @@ export function createRecordServer(opts = {}) {
     throw 'Record server was created'
   }
   opts.port = cfg.mock_server_port
-  opts.server = `http://localhost:${cfg.gateway_server_port}`
+  opts.proxy = {
+    changeOrigin: true,
+    target: `http://localhost:${cfg.gateway_server_port}`,
+  }
   server = createServer(opts)
   return server
 }

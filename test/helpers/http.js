@@ -1,5 +1,6 @@
 import { request as httpRequest } from 'http'
 import cfg from './config'
+import { parseBody } from '../../src/util'
 
 export function createRequest(opts, data = null) {
   const defaultOpts = {
@@ -10,39 +11,33 @@ export function createRequest(opts, data = null) {
   }
 
   return new Promise((resolve, reject) => {
-    const requestJson = data ? JSON.stringify(data) : ''
-    const requestOpts = Object.assign({}, defaultOpts, opts)
+    const reqJson = data ? JSON.stringify(data) : ''
+    const reqOpts = Object.assign({}, defaultOpts, opts)
 
     if (data) {
-      requestOpts.headers = {
+      reqOpts.headers = {
         'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(requestJson),
+        'Content-Length': Buffer.byteLength(reqJson),
       }
     }
 
-    const request = httpRequest(requestOpts, (response) => {
-      const reponseBody = []
-
-      response.on('data', (chunk, encoding) => reponseBody.push([chunk, encoding]))
-      response.on('end', () => {
-        response.body = Buffer.concat(reponseBody.map(([ chunk ]) => chunk)).toString()
-        resolve({
-          request,
-          response,
-        })
+    const req = httpRequest(reqOpts, async (res) => {
+      res.body = (await parseBody(res)).toString()
+      resolve({
+        request: req,
+        response: res,
       })
-      response.on('error', reject)
     })
 
-    request.write(requestJson)
-    request.end()
+    req.write(reqJson)
+    req.end()
   })
 }
 
 export function createResponse(succeeded = true, payload) {
-  const response = succeeded
+  const res = succeeded
     ? { succeeded, data: payload || {} }
     : { succeeded, message: payload || '' }
 
-  return JSON.stringify(response)
+  return JSON.stringify(res)
 }

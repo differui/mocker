@@ -3,7 +3,6 @@ import rimraf from 'rimraf'
 import { resolve as resolvePath } from 'path'
 import {
   isSameJson,
-  concatBody,
   createRequest,
   createRecordServer,
   createGatewayServer,
@@ -19,6 +18,7 @@ test.beforeEach(t => {
     record: true,
     replay: true,
     record_dir: recordDir,
+    replay_dir: recordDir,
   })
   createGatewayServer()
 })
