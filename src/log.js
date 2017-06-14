@@ -37,7 +37,7 @@ export function summary(config) {
   const verbose = cfg.get('verbose')
   let message = ''
 
-  message += green('Mocking!\n')
+  message += green('rnr is running!\n')
   message += '\n'
   message += `${bold('- Local:   ')}http://localhost:${port}\n`
   message += `${bold('- Porxy:   ')}${server}\n`
