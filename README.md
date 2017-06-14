@@ -29,7 +29,7 @@ rnr creating a proxy server between local client and remote server.It recording 
 local      →     | has      |    →     | remote |
 client     ←     | records? |    ←     | server |
         response |__________| response |________|
-                      ↓↑
+                      ↑ ↓
                   file system
 ```
 
