@@ -404,7 +404,7 @@ var _Object$keys = unwrapExports(keys);
 
 var name = "node-rnr";
 var bin_name = "rnr";
-var version = "0.6.5";
+var version = "0.6.6";
 var description = "Record & Replay HTTP streams by node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "NODE_MODULES=0 node ./build/set-babelrc.js && ./node_modules/.bin/rollup -c", "postbuild": "echo '#!/usr/bin/env node' > ./bin/rnr.js && cat ./dest/bundle.js >> ./bin/rnr.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "pretest": "NODE_ENV=development npm run build", "test": "NODE_MODULES=commonjs node ./build/set-babelrc.js && ./node_modules/.bin/ava -s", "prepublish": "npm run test && NODE_ENV=production npm run build" };
@@ -3033,7 +3033,7 @@ function summary(config) {
   var verbose = get$1('verbose');
   var message = '';
 
-  message += colors.green('Mocking!\n');
+  message += colors.green('rnr is running!\n');
   message += '\n';
   message += colors.bold('- Local:   ') + 'http://localhost:' + port + '\n';
   message += '' + colors.bold('- Porxy:   ') + server + '\n';
