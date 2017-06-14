@@ -404,7 +404,7 @@ var _Object$keys = unwrapExports(keys);
 
 var name = "node-rnr";
 var bin_name = "rnr";
-var version = "0.6.2";
+var version = "0.6.4";
 var description = "Record & Replay HTTP streams by node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "NODE_MODULES=0 node ./build/set-babelrc.js && ./node_modules/.bin/rollup -c", "postbuild": "echo '#!/usr/bin/env node' > ./bin/rnr.js && cat ./dest/bundle.js >> ./bin/rnr.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "pretest": "NODE_ENV=development npm run build", "test": "NODE_MODULES=commonjs node ./build/set-babelrc.js && ./node_modules/.bin/ava -s", "prepublish": "npm run test && NODE_ENV=production npm run build" };
@@ -2825,7 +2825,7 @@ function stringifyByOrder(obj) {
 }
 
 var defaultConfig = {
-  config_file_name: 'rr.config.js',
+  config_file_name: 'rnr.config.js',
   record_dir_name: '.record',
   record_dir: '',
   record: false,
@@ -3027,7 +3027,7 @@ function error$1(e, req) {
 
 function summary(config) {
   var port = get$1('port');
-  var target = get$1('proxy').target;
+  var server = get$1('server');
   var recordDir = get$1('record_dir');
   var replay = get$1('replay');
   var verbose = get$1('verbose');
@@ -3036,7 +3036,7 @@ function summary(config) {
   message += colors.green('Mocking!\n');
   message += '\n';
   message += colors.bold('- Local:   ') + 'http://localhost:' + port + '\n';
-  message += '' + colors.bold('- Porxy:   ') + target + '\n';
+  message += '' + colors.bold('- Porxy:   ') + server + '\n';
   message += '' + colors.bold('- Config:  ') + (config || colors.red('OFF')) + '\n';
   message += '' + colors.bold('- Record:  ') + (recordDir || colors.red('OFF')) + '\n';
   message += '' + colors.bold('- Replay:  ') + (replay ? colors.green('ON') : colors.red('OFF')) + '\n';
@@ -3191,7 +3191,7 @@ function run() {
     _Object$assign(opts, require(path.resolve('.', config)));
   }
   if (opts.server && opts.server.indexOf('http://') !== 0) {
-    opts.target = 'http://' + opts.proxy.target;
+    opts.server = 'http://' + opts.server;
   }
   if (opts.server) {
     createServer$1(opts);
