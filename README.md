@@ -23,7 +23,7 @@
 
 rnr creating a proxy server between local client and remote server.It recording remote server responses on local file system and responsing client requests with the records in future.
 
-```bash
+```txt
 
         request   __________  request   ________
 local      →     | has      |    →     | remote |
