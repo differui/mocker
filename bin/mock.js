@@ -404,10 +404,10 @@ var _Object$keys = unwrapExports(keys);
 
 var name = "node-rnr";
 var bin_name = "rnr";
-var version = "0.6.0";
+var version = "0.6.1";
 var description = "Record & Replay HTTP streams by node.js";
 var main = "dest/bundle.js";
-var scripts = { "build": "NODE_MODULES=0 node ./build/set-babelrc.js && ./node_modules/.bin/rollup -c", "postbuild": "echo '#!/usr/bin/env node' > ./bin/mock.js && cat ./dest/bundle.js >> ./bin/mock.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "pretest": "NODE_ENV=development npm run build", "test": "NODE_MODULES=commonjs node ./build/set-babelrc.js && ./node_modules/.bin/ava -s" };
+var scripts = { "build": "NODE_MODULES=0 node ./build/set-babelrc.js && ./node_modules/.bin/rollup -c", "postbuild": "echo '#!/usr/bin/env node' > ./bin/mock.js && cat ./dest/bundle.js >> ./bin/mock.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "pretest": "NODE_ENV=development npm run build", "test": "NODE_MODULES=commonjs node ./build/set-babelrc.js && ./node_modules/.bin/ava -s", "prepublish": "npm run test && NODE_ENV=production npm run build" };
 var keywords = ["rollup"];
 var author = "differui<differui@gmail.com>";
 var bin = { "rnr": "bin/rnr.js" };
@@ -2776,7 +2776,7 @@ exports.default = function (arr) {
 
 var _toConsumableArray = unwrapExports(toConsumableArray);
 
-function hasOwn(obj, key, ob) {
+function hasOwn(obj, key) {
   return (obj.hasOwnProperty || Object.prototype.hasOwnProperty).call(obj, key);
 }
 
@@ -2841,9 +2841,7 @@ function has$1(key) {
 }
 
 function get$1(key) {
-  if (has$1(key)) {
-    return runtimeConfig[key];
-  }
+  return has$1(key) ? runtimeConfig[key] : undefined;
 }
 
 function put(key, value) {

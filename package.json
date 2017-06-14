@@ -1,7 +1,7 @@
 {
   "name": "node-rnr",
   "bin_name": "rnr",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Record & Replay HTTP streams by node.js",
   "main": "dest/bundle.js",
   "scripts": {
