@@ -2037,7 +2037,7 @@ var _Object$keys = unwrapExports(keys);
 
 var name = "node-rnr";
 var bin_name = "rnr";
-var version = "0.6.8";
+var version = "0.6.9";
 var description = "Record & Replay HTTP streams by node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "NODE_MODULES=0 node ./build/set-babelrc.js && ./node_modules/.bin/rollup -c", "postbuild": "echo '#!/usr/bin/env node' > ./bin/rnr.js && cat ./dest/bundle.js >> ./bin/rnr.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "pretest": "NODE_ENV=development npm run build", "test": "NODE_MODULES=commonjs node ./build/set-babelrc.js && ./node_modules/.bin/ava -s", "prepublish": "npm run test && NODE_ENV=production npm run build" };
@@ -2066,7 +2066,7 @@ var pkg = {
 	devDependencies: devDependencies
 };
 
-var cli = meow('\n    Usage\n      $ ' + pkg.bin_name + ' --config\n      $ ' + pkg.bin_name + ' --server [remote server host]\n\n    Options\n      -1, --record  Record HTTP response\n      -2, --replay  Response HTTP request with records\n      -3, --both    Record && Replay\n      -c, --config  Use config file\n      -t, --target  Remote server host\n      -h, --host    ' + pkg.bin_name + ' proxy server host name\n      -p, --port    ' + pkg.bin_name + ' proxy server port number\n      -v, --verbose Output logs to stdout\n      \n\n', {
+var cli = meow('\n    Usage\n      $ ' + pkg.bin_name + ' --config\n      $ ' + pkg.bin_name + ' --target [remote server host]\n\n    Options\n      -1, --record  Record HTTP response\n      -2, --replay  Response HTTP request with records\n      -3, --both    Record && Replay\n      -c, --config  Use config file\n      -t, --target  Remote server host\n      -h, --host    ' + pkg.bin_name + ' proxy server host name\n      -p, --port    ' + pkg.bin_name + ' proxy server port number\n      -v, --verbose Output logs to stdout\n      \n\n', {
   boolean: ['verbose', 'proxy', 'record', 'replay', 'both'],
   string: ['config', 'target', 'host'],
   number: ['port'],
@@ -2875,7 +2875,11 @@ function put(key, value) {
 }
 
 function log() {
-  
+  {
+    var _console;
+
+    (_console = console).log.apply(_console, arguments);
+  }
 }
 
 function logRequest(type, req) {
