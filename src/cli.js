@@ -4,7 +4,7 @@ import pkg from '../package.json'
 export default meow(`
     Usage
       $ ${pkg.bin_name} --config
-      $ ${pkg.bin_name} --server [remote server host]
+      $ ${pkg.bin_name} --target [remote server host]
 
     Options
       -1, --record  Record HTTP response
