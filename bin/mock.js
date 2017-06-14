@@ -404,7 +404,7 @@ var _Object$keys = unwrapExports(keys);
 
 var name = "node-rnr";
 var bin_name = "rnr";
-var version = "0.5.2";
+var version = "0.6.0";
 var description = "Record & Replay HTTP streams by node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "NODE_MODULES=0 node ./build/set-babelrc.js && ./node_modules/.bin/rollup -c", "postbuild": "echo '#!/usr/bin/env node' > ./bin/mock.js && cat ./dest/bundle.js >> ./bin/mock.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "pretest": "NODE_ENV=development npm run build", "test": "NODE_MODULES=commonjs node ./build/set-babelrc.js && ./node_modules/.bin/ava -s" };
@@ -3002,7 +3002,11 @@ exports.default = function () {
 var _slicedToArray = unwrapExports(slicedToArray);
 
 function log() {
-  
+  {
+    var _console;
+
+    (_console = console).log.apply(_console, arguments);
+  }
 }
 
 function logRequest(type, req) {

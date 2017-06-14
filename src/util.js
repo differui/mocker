@@ -1,4 +1,4 @@
-export function hasOwn(obj, key, ob) {
+export function hasOwn(obj, key) {
   return (obj.hasOwnProperty || Object.prototype.hasOwnProperty).call(obj, key)
 }
 

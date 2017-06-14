@@ -1,7 +1,7 @@
 {
   "name": "node-rnr",
   "bin_name": "rnr",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Record & Replay HTTP streams by node.js",
   "main": "dest/bundle.js",
   "scripts": {
@@ -10,7 +10,8 @@
     "prestart": "npm run build",
     "start": "node ./dest/bundle.js",
     "pretest": "NODE_ENV=development npm run build",
-    "test": "NODE_MODULES=commonjs node ./build/set-babelrc.js && ./node_modules/.bin/ava -s"
+    "test": "NODE_MODULES=commonjs node ./build/set-babelrc.js && ./node_modules/.bin/ava -s",
+    "prepublish": "npm run test && NODE_ENV=production npm run build"
   },
   "keywords": [
     "rollup"

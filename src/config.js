@@ -17,9 +17,7 @@ export function has(key) {
 }
 
 export function get(key) {
-  if (has(key)) {
-    return runtimeConfig[key]
-  }
+  return has(key) ? runtimeConfig[key] : undefined
 }
 
 export function put(key, value) {
