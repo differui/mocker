@@ -34,7 +34,6 @@ export function summary() {
   const target = cfg.get('proxy').target
   const recordDir = cfg.get('record_dir')
   const replayDir = cfg.get('replay_dir')
-  const replay = cfg.get('replay')
   const verbose = cfg.get('verbose')
   let message = ''
 

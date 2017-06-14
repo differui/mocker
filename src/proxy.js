@@ -5,7 +5,7 @@ import * as cfg from './config'
 
 function onProxyReq(proxyReq, req, res) {
   req.pipe(proxyReq)
-  log.proxy(req)
+  log.proxy(req, res)
 }
 
 function onProxyRes(proxyRes, req, res) {

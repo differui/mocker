@@ -7,7 +7,7 @@ import * as cfg from './config'
 import * as log from './log'
 
 export default function replay(req, res) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const replayDir = cfg.get('replay_dir')
     const recordId = sha1(stringifyRequest(req))
     const recordPath = resolvePath(replayDir, recordId)

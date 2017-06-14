@@ -30,7 +30,14 @@ export function createServer(opts = {}) {
 
 function run() {
   const opts = {}
-  const { verbose, target, port, record, replay, both } = cli.flags
+  const {
+    verbose,
+    target,
+    port,
+    record,
+    replay,
+    both,
+  } = cli.flags
   const config = hasOwn(cli.flags, 'config') && (cli.flags.config || cfg.get('config_file_name'))
 
   if (record || both) {
