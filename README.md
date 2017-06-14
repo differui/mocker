@@ -21,12 +21,12 @@
 
 ## Overview
 
-rnr creating a proxy server between local client and remote server.It recording remote server responses on local file system and responsing client requests with the records in future.
+rnr creates a proxy server between user client and remote server.It records responses from remote server in file system and replays them when user client request again.
 
 ```txt
 
         request   __________  request   ________
-local      →     | has      |    →     | remote |
+user       →     | has      |    →     | remote |
 client     ←     | records? |    ←     | server |
         response |__________| response |________|
                       ↑ ↓
@@ -44,24 +44,24 @@ npm install node-rnr -g
 ### Commands
 
 ```bash
-rnr --server [remote server host]
+rnr --target [remote server host]
 ```
 
 Proxy:
 
 ```bash
 # dumb proxy
-rnr --server http://localhost:8888
+rnr --target http://localhost:8888
 ```
 
 Record & Replay:
 
 ```bash
 # record client requests
-rnr --record --server http://localhost:8888
+rnr --record --target http://localhost:8888
 
 # replay request with records
-rnr --replay --server http://localhost:8888
+rnr --replay --target http://localhost:8888
 ```
 
 See a list of all available options:
