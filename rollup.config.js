@@ -2,6 +2,7 @@ const commonjs = require('rollup-plugin-commonjs')
 const eslint = require('rollup-plugin-eslint')
 const replace = require('rollup-plugin-replace')
 const nodeResolve = require('rollup-plugin-node-resolve')
+const hypothetical = require('rollup-plugin-hypothetical')
 const babel = require('rollup-plugin-babel')
 const json = require('rollup-plugin-json')
 
@@ -24,6 +25,12 @@ export default {
   plugins: [
     json(),
     eslint(),
+    hypothetical({
+      allowRealFiles: true,
+      files: {
+        './node_modules/core-js/library/modules/es6.object.to-string.js': 'export default null',
+      },
+    }),
     babel({
       exclude: 'node_modules/**',
       runtimeHelpers: true,
