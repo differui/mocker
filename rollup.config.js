@@ -10,20 +10,17 @@ export default {
   dest: './dest/bundle.js',
   format: 'cjs',
   external: [
+    'core-js',
     'fs',
     'http',
     'boxen',
     'meow',
     'url',
-    'connect',
-    'body-parser',
     'fs-extra',
     'path',
-    'https',
-    'util',
     'colors',
     'http-proxy',
-    'mockjs',
+    'sha1',
   ],
   plugins: [
     json(),
@@ -32,13 +29,7 @@ export default {
       runtimeHelpers: true,
       exclude: 'node_modules/**',
     }),
-    commonjs({
-      namedExports: {
-        'src/proxy.js': [
-          'web',
-        ],
-      },
-    }),
+    commonjs(),
     resolve(),
     replace({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
