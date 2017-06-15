@@ -2038,7 +2038,7 @@ var _Object$keys = unwrapExports(keys);
 
 var name = "node-rnr";
 var bin_name = "rnr";
-var version = "0.6.11";
+var version = "0.6.12";
 var description = "Record & Replay HTTP streams by node.js";
 var main = "dest/bundle.js";
 var scripts = { "build": "NODE_MODULES=0 node ./build/set-babelrc.js && ./node_modules/.bin/rollup -c", "postbuild": "echo '#!/usr/bin/env node' > ./bin/rnr.js && cat ./dest/bundle.js >> ./bin/rnr.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "pretest": "NODE_ENV=development npm run build", "test": "NODE_MODULES=commonjs node ./build/set-babelrc.js && ./node_modules/.bin/ava -s", "posttest": "npm run build", "prepublish": "npm run test && NODE_ENV=production npm run build" };
@@ -2820,30 +2820,13 @@ var record$1 = (function () {
   return record$$1;
 })();
 
-var onProxyReq = function () {
-  var _ref = _asyncToGenerator(index.mark(function _callee(proxyReq, req, res) {
-    return index.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            if (req.body && req.body.length) {
-              proxyReq.write(new Buffer(req.body[0]));
-              proxyReq.end();
-            }
-            proxy(req, res);
-
-          case 2:
-          case 'end':
-            return _context.stop();
-        }
-      }
-    }, _callee, this);
-  }));
-
-  return function onProxyReq(_x, _x2, _x3) {
-    return _ref.apply(this, arguments);
-  };
-}();
+function onProxyReq(proxyReq, req, res) {
+  if (req.body && req.body.length) {
+    proxyReq.write(new Buffer(req.body[0]));
+    proxyReq.end();
+  }
+  proxy(req, res);
+}
 
 function onProxyRes(proxyRes, req, res) {
   if (get('record')) {
