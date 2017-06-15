@@ -3,8 +3,11 @@ import record from './record'
 import * as log from './log'
 import * as cfg from './config'
 
-function onProxyReq(proxyReq, req, res) {
-  req.pipe(proxyReq)
+async function onProxyReq(proxyReq, req, res) {
+  if (req.body && req.body.length) {
+    proxyReq.write(new Buffer(req.body[0]))
+    proxyReq.end()
+  }
   log.proxy(req, res)
 }
 
