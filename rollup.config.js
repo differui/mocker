@@ -10,7 +10,6 @@ export default {
   dest: './dest/bundle.js',
   format: 'cjs',
   external: [
-    'core-js',
     'fs',
     'http',
     'boxen',
