@@ -13,6 +13,7 @@ import {
 async function generateMessageDescription(req, res) {
   return {
     request: {
+      method: req.method,
       version: req.httpVersion,
       headers: convertRawHeaders(req.rawHeaders),
       url: req.url,

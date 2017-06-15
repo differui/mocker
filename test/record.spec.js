@@ -46,6 +46,7 @@ test('should create recording json file', async t => {
   let json = readJsonSync(resolvePath(recordDir, files[0]))
 
   // request
+  t.true(json.request.method === 'PUT')
   t.true(json.request.url === '/gateway/a')
   t.true(isSameJson(stringifyBody(json.request.body), templateA))
 
