@@ -25,8 +25,8 @@ export default {
     json(),
     eslint(),
     babel({
-      runtimeHelpers: true,
       exclude: 'node_modules/**',
+      runtimeHelpers: true,
     }),
     commonjs(),
     resolve(),

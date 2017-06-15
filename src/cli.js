@@ -1,10 +1,10 @@
 import meow from 'meow'
-import pkg from '../package.json'
+import { bin_name as binName } from '../package.json'
 
 export default meow(`
     Usage
-      $ ${pkg.bin_name} --config
-      $ ${pkg.bin_name} --target [remote server host]
+      $ ${binName} --config
+      $ ${binName} --target [remote server host]
 
     Options
       -1, --record  Record HTTP response
@@ -12,8 +12,8 @@ export default meow(`
       -3, --both    Record && Replay
       -c, --config  Use config file
       -t, --target  Remote server host
-      -h, --host    ${pkg.bin_name} proxy server host name
-      -p, --port    ${pkg.bin_name} proxy server port number
+      -h, --host    ${binName} proxy server host name
+      -p, --port    ${binName} proxy server port number
       -v, --verbose Output logs to stdout
       \n
 `, {
