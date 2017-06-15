@@ -11,6 +11,7 @@
     "start": "node ./dest/bundle.js",
     "pretest": "NODE_ENV=development npm run build",
     "test": "NODE_MODULES=commonjs node ./build/set-babelrc.js && ./node_modules/.bin/ava -s",
+    "posttest": "npm run build",
     "prepublish": "npm run test && NODE_ENV=production npm run build"
   },
   "keywords": [
