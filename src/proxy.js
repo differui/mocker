@@ -3,7 +3,7 @@ import record from './record'
 import * as log from './log'
 import * as cfg from './config'
 
-async function onProxyReq(proxyReq, req, res) {
+function onProxyReq(proxyReq, req, res) {
   if (req.body && req.body.length) {
     proxyReq.write(new Buffer(req.body[0]))
     proxyReq.end()
