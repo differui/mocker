@@ -2036,38 +2036,9 @@ module.exports = { "default": keys$1, __esModule: true };
 
 var _Object$keys = unwrapExports(keys);
 
-var name = "node-rnr";
 var bin_name = "rnr";
-var version = "0.6.10";
-var description = "Record & Replay HTTP streams by node.js";
-var main = "dest/bundle.js";
-var scripts = { "build": "NODE_MODULES=0 node ./build/set-babelrc.js && ./node_modules/.bin/rollup -c", "postbuild": "echo '#!/usr/bin/env node' > ./bin/rnr.js && cat ./dest/bundle.js >> ./bin/rnr.js", "prestart": "npm run build", "start": "node ./dest/bundle.js", "pretest": "NODE_ENV=development npm run build", "test": "NODE_MODULES=commonjs node ./build/set-babelrc.js && ./node_modules/.bin/ava -s", "prepublish": "npm run test && NODE_ENV=production npm run build" };
-var keywords = ["rollup"];
-var author = "differui<differui@gmail.com>";
-var bin = { "rnr": "bin/rnr.js" };
-var files = ["bin"];
-var license = "MIT";
-var ava = { "require": ["babel-register"], "files": ["test/**/*.spec.js"], "sources": ["test/**/*.js"], "babel": { "presets": ["env"] } };
-var dependencies = { "babel-runtime": "^6.23.0", "boxen": "^1.1.0", "colors": "^1.1.2", "fs-extra": "^3.0.1", "http-proxy": "^1.16.2", "meow": "^3.7.0", "sha1": "^1.1.1" };
-var devDependencies = { "ava": "^0.19.1", "babel-plugin-external-helpers": "^6.22.0", "babel-plugin-transform-runtime": "^6.23.0", "babel-preset-env": "^1.4.0", "babel-register": "^6.24.1", "eslint": "^3.19.0", "eslint-config-airbnb-base": "^11.2.0", "eslint-plugin-import": "^2.3.0", "rimraf": "^2.6.1", "rollup": "^0.41.6", "rollup-plugin-babel": "^2.7.1", "rollup-plugin-commonjs": "^8.0.2", "rollup-plugin-eslint": "^3.0.0", "rollup-plugin-json": "^2.1.1", "rollup-plugin-node-resolve": "^3.0.0", "rollup-plugin-replace": "^1.1.1", "rollup-watch": "^3.2.2" };
-var pkg = {
-	name: name,
-	bin_name: bin_name,
-	version: version,
-	description: description,
-	main: main,
-	scripts: scripts,
-	keywords: keywords,
-	author: author,
-	bin: bin,
-	files: files,
-	license: license,
-	ava: ava,
-	dependencies: dependencies,
-	devDependencies: devDependencies
-};
 
-var cli = meow('\n    Usage\n      $ ' + pkg.bin_name + ' --config\n      $ ' + pkg.bin_name + ' --target [remote server host]\n\n    Options\n      -1, --record  Record HTTP response\n      -2, --replay  Response HTTP request with records\n      -3, --both    Record && Replay\n      -c, --config  Use config file\n      -t, --target  Remote server host\n      -h, --host    ' + pkg.bin_name + ' proxy server host name\n      -p, --port    ' + pkg.bin_name + ' proxy server port number\n      -v, --verbose Output logs to stdout\n      \n\n', {
+var cli = meow('\n    Usage\n      $ ' + bin_name + ' --config\n      $ ' + bin_name + ' --target [remote server host]\n\n    Options\n      -1, --record  Record HTTP response\n      -2, --replay  Response HTTP request with records\n      -3, --both    Record && Replay\n      -c, --config  Use config file\n      -t, --target  Remote server host\n      -h, --host    ' + bin_name + ' proxy server host name\n      -p, --port    ' + bin_name + ' proxy server port number\n      -v, --verbose Output logs to stdout\n      \n\n', {
   boolean: ['verbose', 'proxy', 'record', 'replay', 'both'],
   string: ['config', 'target', 'host'],
   number: ['port'],

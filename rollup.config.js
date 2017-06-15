@@ -1,7 +1,7 @@
 const commonjs = require('rollup-plugin-commonjs')
 const eslint = require('rollup-plugin-eslint')
 const replace = require('rollup-plugin-replace')
-const resolve = require('rollup-plugin-node-resolve')
+const nodeResolve = require('rollup-plugin-node-resolve')
 const babel = require('rollup-plugin-babel')
 const json = require('rollup-plugin-json')
 
@@ -28,8 +28,8 @@ export default {
       exclude: 'node_modules/**',
       runtimeHelpers: true,
     }),
+    nodeResolve(),
     commonjs(),
-    resolve(),
     replace({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
     })
