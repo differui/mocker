@@ -2067,7 +2067,7 @@ var pkg = {
 	devDependencies: devDependencies
 };
 
-var cli = meow('\n    Usage\n      $ ' + pkg.bin_name + ' --config\n      $ ' + pkg.bin_name + ' --target [remote server host]\n\n    Options\n      -1, --record  Record HTTP response\n      -2, --replay  Response HTTP request with records\n      -3, --both    Record && Replay\n      -c, --config  Use config file\n      -t, --target  Remote server host\n      -h, --host    ' + pkg.bin_name + ' proxy server host name\n      -p, --port    ' + pkg.bin_name + ' proxy server port number\n      -v, --verbose Output logs to stdout\n      \n\n', {
+var cli = meow('\n    Usage\n      $ ' + pkg.bin_name + ' --config\n      $ ' + pkg.bin_name + ' --target [remote server host]\n\n    Options\n      -1, --record   Record HTTP response\n      -2, --replay   Response HTTP request with records\n      -3, --both     Record && Replay\n      -c, --config   Use config file\n      -t, --target   Remote server host\n      -h, --host     ' + pkg.bin_name + ' proxy server host name\n      -p, --port     ' + pkg.bin_name + ' proxy server port number\n      -s, --strategy How to define same requests\n\n      [simple] Just compare request method and request URL.\n\n      -v, --verbose  Output logs to stdout\n      \n\n', {
   boolean: ['verbose', 'proxy', 'record', 'replay', 'both'],
   string: ['config', 'target', 'host'],
   number: ['port'],
